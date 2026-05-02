@@ -62,11 +62,13 @@ interface AppState {
   theme: Theme;
   viewMode: ViewMode;
   sidebarView: SidebarView;
+  scratchpadView: 'editor' | 'preview';
   searchQuery: string;
   isLoading: boolean;
   setTheme: (theme: Theme) => void;
   setViewMode: (mode: ViewMode) => void;
   setSidebarView: (view: SidebarView) => void;
+  setScratchpadView: (view: 'editor' | 'preview') => void;
   setSearchQuery: (query: string) => void;
   setSelectedCategoryId: (id: string | null) => void;
   setSelectedTagId: (id: string | null) => void;
@@ -359,12 +361,14 @@ export const useStore = create<AppState>((set, get) => ({
   theme: "dark",
   viewMode: "editor",
   sidebarView: "notes",
+  scratchpadView: "editor",
   searchQuery: "",
   isLoading: false,
 
   setTheme: (theme) => set({ theme }),
   setViewMode: (mode) => set({ viewMode: mode }),
   setSidebarView: (view) => set({ sidebarView: view }),
+  setScratchpadView: (view) => set({ scratchpadView: view }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSelectedCategoryId: (id) => set({ selectedCategoryId: id }),
   setSelectedTagId: (id) => set({ selectedTagId: id }),

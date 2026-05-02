@@ -4,12 +4,13 @@ import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
-import { Eraser, Download, NotebookPen, Check } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { Eraser, Download, NotebookPen, Check, Eye } from 'lucide-react';
 
 const STORAGE_KEY = 'scratchpad';
 
 export function Scratchpad() {
-  const { theme } = useStore();
+  const { theme, scratchpadView, setScratchpadView } = useStore();
   const [text, setText] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
   const [isSaved, setIsSaved] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(
@@ -67,59 +68,80 @@ export function Scratchpad() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="flex items-center gap-2">
-          <NotebookPen className="w-4 h-4 text-amber-500" />
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+        <div className="flex items-center gap-1.5">
+          <NotebookPen className="w-3.5 h-3.5 text-amber-500" />
           <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Scratchpad</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">— quick notes, no pressure</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">— quick notes</span>
         </div>
-        <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-600 rounded-lg p-0.5">
+        <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-600 rounded p-0.5">
+          <button
+            onClick={() => setScratchpadView(scratchpadView === 'preview' ? 'editor' : 'preview')}
+            className={`flex items-center gap-1 px-1.5 py-1 text-xs rounded transition-colors ${
+              scratchpadView === 'preview'
+                ? 'text-primary-500 dark:text-primary-400 bg-gray-200 dark:bg-gray-700'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+            title={scratchpadView === 'preview' ? 'Switch to editor' : 'Markdown preview'}
+          >
+            <Eye className="w-3 h-3" />
+            Preview
+          </button>
+          <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
           <button
             onClick={handleClear}
             disabled={!text.trim()}
-            className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-1.5 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Clear scratchpad"
           >
-            <Eraser className="w-4 h-4" />
+            <Eraser className="w-3 h-3" />
             Clear
           </button>
-          <div className="w-px h-5 bg-gray-200 dark:bg-gray-600" />
+          <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
           <button
             onClick={handleExport}
             disabled={!text.trim()}
-            className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1 px-1.5 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Export as .md"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3 h-3" />
             Export
           </button>
         </div>
       </div>
 
-      {/* Editor */}
+      {/* Editor/Preview */}
       <div className="flex-1 overflow-hidden">
-        <CodeMirror
-          value={text}
-          height="100%"
-          extensions={[markdown({ base: markdownLanguage, codeLanguages: languages })]}
-          theme={theme === 'dark' ? githubDark : githubLight}
-          onChange={handleChange}
-          className="h-full"
-          basicSetup={{
-            lineNumbers: false,
-            foldGutter: false,
-            highlightActiveLine: true,
-            highlightSelectionMatches: true,
-          }}
-        />
+        {scratchpadView === 'preview' ? (
+          <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
+            <div className="max-w-3xl mx-auto markdown-preview">
+              <ReactMarkdown>{text}</ReactMarkdown>
+            </div>
+          </div>
+        ) : (
+          <CodeMirror
+            value={text}
+            height="100%"
+            extensions={[markdown({ base: markdownLanguage, codeLanguages: languages })]}
+            theme={theme === 'dark' ? githubDark : githubLight}
+            onChange={handleChange}
+            className="h-full"
+            basicSetup={{
+              lineNumbers: false,
+              foldGutter: false,
+              highlightActiveLine: true,
+              highlightSelectionMatches: true,
+            }}
+          />
+        )}
       </div>
 
       {/* Status Bar */}
-      <div className="px-3 py-1.5 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
-        <div className="flex items-center gap-1.5">
+      <div className="px-2 py-1 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
+        <div className="flex items-center gap-1">
           {isSaved ? (
             <>
-              <Check className="w-3 h-3 text-green-500" />
+              <Check className="w-2.5 h-2.5 text-green-500" />
               <span>{formatLastSaved()}</span>
             </>
           ) : (
