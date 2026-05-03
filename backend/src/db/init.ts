@@ -44,6 +44,7 @@ export function initializeDatabase() {
       text TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
+      trashed_at TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
@@ -67,6 +68,13 @@ export function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_categories_user ON categories(user_id);
     CREATE INDEX IF NOT EXISTS idx_tags_user ON tags(user_id);
   `);
+
+  // Add trashed_at column if it doesn't exist (for existing databases)
+  try {
+    db.exec(`ALTER TABLE notes ADD COLUMN trashed_at TEXT`);
+  } catch (e) {
+    // Column already exists, ignore
+  }
 
   console.log('Database initialized successfully');
 }

@@ -95,47 +95,54 @@ export function NoteList() {
       {/* Active Filters */}
       {(selectedCategoryId || selectedTagId) && (
         <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 flex-wrap">
-          {selectedCategoryId && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-              <Folder
-                className="w-3 h-3"
+          {selectedCategoryId && (() => {
+            const cat = categories.find((c) => c.id === selectedCategoryId);
+            return cat ? (
+              <span
+                className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
                 style={{
-                  color: categories.find((c) => c.id === selectedCategoryId)
-                    ?.color,
+                  backgroundColor: `${cat.color}20`,
+                  color: cat.color,
                 }}
-              />
-              {categories.find((c) => c.id === selectedCategoryId)?.name}
-              <button
-                onClick={() => {
-                  setSelectedCategoryId(null);
-                  fetchNotes({ categoryId: undefined });
-                }}
-                className="ml-1 text-gray-400 hover:text-gray-600"
               >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          {selectedTagId && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-              <Tag
-                className="w-3 h-3"
+                <Folder className="w-3 h-3" />
+                {cat.name}
+                <button
+                  onClick={() => {
+                    setSelectedCategoryId(null);
+                    fetchNotes({ categoryId: undefined });
+                  }}
+                  className="ml-0.5 opacity-60 hover:opacity-100"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </span>
+            ) : null;
+          })()}
+          {selectedTagId && (() => {
+            const tag = tags.find((t) => t.id === selectedTagId);
+            return tag ? (
+              <span
+                className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium"
                 style={{
-                  color: tags.find((t) => t.id === selectedTagId)?.color,
+                  backgroundColor: `${tag.color}20`,
+                  color: tag.color,
                 }}
-              />
-              {tags.find((t) => t.id === selectedTagId)?.name}
-              <button
-                onClick={() => {
-                  setSelectedTagId(null);
-                  fetchNotes({ tagId: undefined });
-                }}
-                className="ml-1 text-gray-400 hover:text-gray-600"
               >
-                <Trash2 className="w-3 h-3" />
-              </button>
-            </span>
-          )}
+                <Tag className="w-3 h-3" />
+                {tag.name}
+                <button
+                  onClick={() => {
+                    setSelectedTagId(null);
+                    fetchNotes({ tagId: undefined });
+                  }}
+                  className="ml-0.5 opacity-60 hover:opacity-100"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </span>
+            ) : null;
+          })()}
         </div>
       )}
 

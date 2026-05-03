@@ -11,6 +11,7 @@ import {
   Tag,
   ChevronRight,
   ChevronLeft,
+  Trash,
 } from "lucide-react";
 
 const TAG_COLORS = [
@@ -74,6 +75,8 @@ export function Sidebar() {
   const [editName, setEditName] = useState("");
   const [editColor, setEditColor] = useState("");
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [expandedFolder, setExpandedFolder] = useState<string | null>(null);
+  const [expandedTag, setExpandedTag] = useState<string | null>(null);
 
   const handleCreate = async () => {
     if (!newItemName.trim()) return;
@@ -149,6 +152,14 @@ export function Sidebar() {
       label: "Tags",
       onClick: () => setSidebarView("tags"),
     },
+    {
+      view: "trash" as const,
+      icon: <Trash className="w-4 h-4 flex-shrink-0" />,
+      label: "Trash",
+      onClick: () => {
+        setSidebarView("trash");
+      },
+    },
   ];
 
   return (
@@ -196,7 +207,7 @@ export function Sidebar() {
       </div>
 
       {/* Content (only when expanded and not on scratchpad) */}
-      {isOpen && sidebarView !== "scratchpad" && (
+      {isOpen && sidebarView !== "scratchpad" && sidebarView !== "trash" && (
         <>
           {/* Section header */}
           <div className="flex items-center justify-between px-3 py-2">
@@ -326,170 +337,246 @@ export function Sidebar() {
                 )}
 
                 {sidebarView === "categories" &&
-                  categories.map((cat) => (
-                    <div
-                      key={cat.id}
-                      className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
-                        selectedCategoryId === cat.id
-                          ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                      }`}
-                    >
-                      {editingId === cat.id ? (
-                        <div className="flex-1 space-y-1.5">
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-                            autoFocus
-                          />
-                          <div className="flex gap-1 flex-wrap">
-                            {FOLDER_COLORS.map((color) => (
-                              <button
-                                key={color}
-                                onClick={() => setEditColor(color)}
-                                className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-gray-400" : ""}`}
-                                style={{ backgroundColor: color }}
+                  categories.map((cat) => {
+                    const folderNotes = notes.filter((n) => (n.categoryIds || []).includes(cat.id));
+                    const isExpanded = expandedFolder === cat.id;
+                    return (
+                      <div key={cat.id}>
+                        <div
+                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
+                            selectedCategoryId === cat.id
+                              ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
+                              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {editingId === cat.id ? (
+                            <div className="flex-1 space-y-1.5">
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                                autoFocus
                               />
+                              <div className="flex gap-1 flex-wrap">
+                                {FOLDER_COLORS.map((color) => (
+                                  <button
+                                    key={color}
+                                    onClick={() => setEditColor(color)}
+                                    className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-gray-400" : ""}`}
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEdit(cat.id)}
+                                  className="text-xs text-primary-600"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingId(null)}
+                                  className="text-xs text-gray-500"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setExpandedFolder(isExpanded ? null : cat.id);
+                                  handleSelect(cat.id);
+                                }}
+                                className="flex-shrink-0"
+                              >
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full block"
+                                  style={{ backgroundColor: cat.color }}
+                                />
+                              </button>
+                              <span
+                                className="flex-1 truncate"
+                                onClick={() => handleSelect(cat.id)}
+                              >
+                                {cat.name}
+                              </span>
+                              <span className="text-xs text-gray-400">{folderNotes.length}</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEdit(cat.id, cat.name, cat.color);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteCategory(cat.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        {isExpanded && folderNotes.length > 0 && (
+                          <div className="ml-4 mt-1 space-y-0.5">
+                            {folderNotes.map((note) => (
+                              <div
+                                key={note.id}
+                                onClick={() => selectNote(note.id)}
+                                className={`flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer text-xs transition-colors ${
+                                  selectedNoteId === note.id
+                                    ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
+                                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                }`}
+                              >
+                                <span className="flex-1 truncate">
+                                  {(note.text.split("\n")[0] || "").replace(/^#+\s*/, "") || "Empty note"}
+                                </span>
+                              </div>
                             ))}
                           </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEdit(cat.id)}
-                              className="text-xs text-primary-600"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="text-xs text-gray-500"
-                            >
-                              Cancel
-                            </button>
+                        )}
+                        {isExpanded && folderNotes.length === 0 && (
+                          <div className="ml-4 mt-1 text-xs text-gray-400 dark:text-gray-500 px-2 py-1">
+                            No notes in this folder
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleSelect(cat.id)}
-                            className="flex-shrink-0"
-                          >
-                            <span
-                              className="w-2.5 h-2.5 rounded-full block"
-                              style={{ backgroundColor: cat.color }}
-                            />
-                          </button>
-                          <span className="flex-1 truncate">{cat.name}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEdit(cat.id, cat.name, cat.color);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteCategory(cat.id);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
 
                 {sidebarView === "tags" &&
-                  tags.map((tag) => (
-                    <div
-                      key={tag.id}
-                      className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
-                        selectedTagId === tag.id
-                          ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                      }`}
-                    >
-                      {editingId === tag.id ? (
-                        <div className="flex-1 space-y-1.5">
-                          <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
-                            autoFocus
-                          />
-                          <div className="flex gap-1 flex-wrap">
-                            {TAG_COLORS.map((color) => (
-                              <button
-                                key={color}
-                                onClick={() => setEditColor(color)}
-                                className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-gray-400" : ""}`}
-                                style={{ backgroundColor: color }}
+                  tags.map((tag) => {
+                    const tagNotes = notes.filter((n) => (n.tagIds || []).includes(tag.id));
+                    const isExpanded = expandedTag === tag.id;
+                    return (
+                      <div key={tag.id}>
+                        <div
+                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
+                            selectedTagId === tag.id
+                              ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
+                              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {editingId === tag.id ? (
+                            <div className="flex-1 space-y-1.5">
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                                autoFocus
                               />
+                              <div className="flex gap-1 flex-wrap">
+                                {TAG_COLORS.map((color) => (
+                                  <button
+                                    key={color}
+                                    onClick={() => setEditColor(color)}
+                                    className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-gray-400" : ""}`}
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEdit(tag.id)}
+                                  className="text-xs text-primary-600"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingId(null)}
+                                  className="text-xs text-gray-500"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setExpandedTag(isExpanded ? null : tag.id);
+                                  handleSelect(tag.id);
+                                }}
+                                className="flex-shrink-0"
+                              >
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full block"
+                                  style={{ backgroundColor: tag.color }}
+                                />
+                              </button>
+                              <span
+                                className="flex-1 truncate"
+                                onClick={() => handleSelect(tag.id)}
+                              >
+                                {tag.name}
+                              </span>
+                              <span className="text-xs text-gray-400">{tagNotes.length}</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEdit(tag.id, tag.name, tag.color);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteTag(tag.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        {isExpanded && tagNotes.length > 0 && (
+                          <div className="ml-4 mt-1 space-y-0.5">
+                            {tagNotes.map((note) => (
+                              <div
+                                key={note.id}
+                                onClick={() => selectNote(note.id)}
+                                className={`flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer text-xs transition-colors ${
+                                  selectedNoteId === note.id
+                                    ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
+                                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                }`}
+                              >
+                                <span className="flex-1 truncate">
+                                  {(note.text.split("\n")[0] || "").replace(/^#+\s*/, "") || "Empty note"}
+                                </span>
+                              </div>
                             ))}
                           </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEdit(tag.id)}
-                              className="text-xs text-primary-600"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="text-xs text-gray-500"
-                            >
-                              Cancel
-                            </button>
+                        )}
+                        {isExpanded && tagNotes.length === 0 && (
+                          <div className="ml-4 mt-1 text-xs text-gray-400 dark:text-gray-500 px-2 py-1">
+                            No notes with this tag
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleSelect(tag.id)}
-                            className="flex-shrink-0"
-                          >
-                            <span
-                              className="w-2.5 h-2.5 rounded-full block"
-                              style={{ backgroundColor: tag.color }}
-                            />
-                          </button>
-                          <span className="flex-1 truncate">{tag.name}</span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEdit(tag.id, tag.name, tag.color);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteTag(tag.id);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
             )}
           </div>
         </>
       )}
 
-      {/* Spacer when collapsed so the sidebar fills height */}
-      {!isOpen && <div className="flex-1" />}
+      {/* Spacer to keep toggle at bottom */}
+      <div className="flex-1" />
 
       {/* Toggle / Pin button */}
       <div

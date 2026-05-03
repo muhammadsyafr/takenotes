@@ -104,6 +104,18 @@ class ApiClient {
     return this.request<void>(`/notes/${id}`, { method: 'DELETE' });
   }
 
+  async getTrashNotes() {
+    return this.request<any[]>('/notes/trash');
+  }
+
+  async restoreNote(id: string) {
+    return this.request<void>(`/notes/${id}/restore`, { method: 'POST' });
+  }
+
+  async permanentDeleteNote(id: string) {
+    return this.request<void>(`/notes/${id}/permanent`, { method: 'DELETE' });
+  }
+
   // Categories
   async getCategories() {
     return this.request<any[]>('/categories');

@@ -12,6 +12,7 @@ export interface Note {
   tagIds: string[];
   createdAt: string;
   updatedAt: string;
+  trashedAt?: string | null;
 }
 
 export interface Category {
@@ -39,6 +40,6 @@ export interface AuthResponse {
 
 export type Theme = "light" | "dark";
 export type ViewMode = "editor" | "preview";
-export type SidebarView = "notes" | "categories" | "tags" | "scratchpad";
+export type SidebarView = "notes" | "categories" | "tags" | "scratchpad" | "trash";
 export type SortBy = "updatedAt" | "createdAt" | "alphabetical";
 export type TextDirection = "ltr" | "rtl";

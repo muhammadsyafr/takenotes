@@ -10,6 +10,7 @@ import {
   Upload,
   FileJson,
   FileArchive,
+  FolderOpen,
 } from "lucide-react";
 import JSZip from "jszip";
 
@@ -138,11 +139,13 @@ export function Settings({ onClose }: { onClose: () => void }) {
 
   const [section, setSection] = useState<Section>("preferences");
   const [importing, setImporting] = useState(false);
+  const [importingFolder, setImportingFolder] = useState(false);
   const [importStatus, setImportStatus] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const handleDownloadZip = async () => {
     const zip = new JSZip();
@@ -239,6 +242,36 @@ export function Settings({ onClose }: { onClose: () => void }) {
       });
     }
     setImporting(false);
+    e.target.value = "";
+  };
+
+  const handleImportFolder = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setImportingFolder(true);
+    setImportStatus(null);
+    try {
+      let noteCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.name.endsWith(".md") || file.name.endsWith(".markdown") || file.name.endsWith(".txt")) {
+          const text = await file.text();
+          await api.createNote({ text });
+          noteCount++;
+        }
+      }
+      await fetchNotes();
+      setImportStatus({
+        type: "success",
+        message: `Successfully imported ${noteCount} note${noteCount !== 1 ? "s" : ""}`,
+      });
+    } catch {
+      setImportStatus({
+        type: "error",
+        message: "Import failed. Please try again.",
+      });
+    }
+    setImportingFolder(false);
     e.target.value = "";
   };
 
@@ -367,8 +400,8 @@ export function Settings({ onClose }: { onClose: () => void }) {
                     <select
                       value={sortBy}
                       onChange={(e) => {
-                        setSortBy(e.target.value as SortBy);
-                        fetchNotes();
+                        const newSort = e.target.value as SortBy;
+                        setSortBy(newSort);
                       }}
                       className={selectClass}
                     >
@@ -449,12 +482,29 @@ export function Settings({ onClose }: { onClose: () => void }) {
                   onClick={() => fileInputRef.current?.click()}
                   loading={importing}
                 />
+                <DataRow
+                  icon={FolderOpen}
+                  title="Import from folder"
+                  description="Import all markdown files from a folder."
+                  buttonLabel="Import from folder"
+                  onClick={() => folderInputRef.current?.click()}
+                  loading={importingFolder}
+                />
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".json"
                   className="hidden"
                   onChange={handleImportFile}
+                />
+                <input
+                  ref={folderInputRef}
+                  type="file"
+                  // @ts-ignore - webkitdirectory is not in TypeScript types
+                  webkitdirectory=""
+                  multiple
+                  className="hidden"
+                  onChange={handleImportFolder}
                 />
                 {importStatus && (
                   <div

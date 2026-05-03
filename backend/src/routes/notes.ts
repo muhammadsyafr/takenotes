@@ -17,7 +17,7 @@ router.get('/', authenticateToken, (req: AuthRequest, res: Response) => {
       LEFT JOIN categories c ON nc.category_id = c.id
       LEFT JOIN note_tags nt ON n.id = nt.note_id
       LEFT JOIN tags t ON nt.tag_id = t.id
-      WHERE n.user_id = ?
+      WHERE n.user_id = ? AND n.trashed_at IS NULL
     `;
     const params: string[] = [req.userId!];
 
@@ -81,6 +81,70 @@ router.post('/', authenticateToken, (req: AuthRequest, res: Response) => {
   }
 });
 
+// Trash routes (must come before /:id routes)
+router.get('/trash', authenticateToken, (req: AuthRequest, res: Response) => {
+  try {
+    const notes = db.prepare(`
+      SELECT n.*, 
+        GROUP_CONCAT(c.id) as category_ids,
+        GROUP_CONCAT(t.id) as tag_ids
+      FROM notes n
+      LEFT JOIN note_categories nc ON n.id = nc.note_id
+      LEFT JOIN categories c ON nc.category_id = c.id
+      LEFT JOIN note_tags nt ON n.id = nt.note_id
+      LEFT JOIN tags t ON nt.tag_id = t.id
+      WHERE n.user_id = ? AND n.trashed_at IS NOT NULL
+      GROUP BY n.id
+      ORDER BY n.trashed_at DESC
+    `).all(req.userId) as any[];
+
+    const formattedNotes = notes.map(note => ({
+      ...note,
+      categoryIds: note.category_ids ? note.category_ids.split(',') : [],
+      tagIds: note.tag_ids ? note.tag_ids.split(',') : [],
+      createdAt: note.created_at,
+      updatedAt: note.updated_at,
+      trashedAt: note.trashed_at
+    }));
+
+    res.json(formattedNotes);
+  } catch (error) {
+    console.error('Get trash error:', error);
+    res.status(500).json({ error: 'Failed to get trash' });
+  }
+});
+
+router.post('/:id/restore', authenticateToken, (req: AuthRequest, res: Response) => {
+  try {
+    const result = db.prepare('UPDATE notes SET trashed_at = NULL WHERE id = ? AND user_id = ? AND trashed_at IS NOT NULL').run(req.params.id, req.userId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error('Restore note error:', error);
+    res.status(500).json({ error: 'Failed to restore note' });
+  }
+});
+
+router.delete('/:id/permanent', authenticateToken, (req: AuthRequest, res: Response) => {
+  try {
+    const result = db.prepare('DELETE FROM notes WHERE id = ? AND user_id = ? AND trashed_at IS NOT NULL').run(req.params.id, req.userId);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error('Permanent delete note error:', error);
+    res.status(500).json({ error: 'Failed to permanently delete note' });
+  }
+});
+
+// Note routes
 router.get('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
   try {
     const note = db.prepare(`
@@ -92,7 +156,7 @@ router.get('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
       LEFT JOIN categories c ON nc.category_id = c.id
       LEFT JOIN note_tags nt ON n.id = nt.note_id
       LEFT JOIN tags t ON nt.tag_id = t.id
-      WHERE n.id = ? AND n.user_id = ?
+      WHERE n.id = ? AND n.user_id = ? AND n.trashed_at IS NULL
       GROUP BY n.id
     `).get(req.params.id, req.userId) as any;
 
@@ -118,7 +182,7 @@ router.put('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
     const { text, categoryIds, tagIds } = req.body;
     const now = new Date().toISOString();
 
-    const existingNote = db.prepare('SELECT id FROM notes WHERE id = ? AND user_id = ?').get(req.params.id, req.userId);
+    const existingNote = db.prepare('SELECT id FROM notes WHERE id = ? AND user_id = ? AND trashed_at IS NULL').get(req.params.id, req.userId);
     if (!existingNote) {
       return res.status(404).json({ error: 'Note not found' });
     }
@@ -153,7 +217,8 @@ router.put('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
 
 router.delete('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
   try {
-    const result = db.prepare('DELETE FROM notes WHERE id = ? AND user_id = ?').run(req.params.id, req.userId);
+    const now = new Date().toISOString();
+    const result = db.prepare('UPDATE notes SET trashed_at = ? WHERE id = ? AND user_id = ? AND trashed_at IS NULL').run(now, req.params.id, req.userId);
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Note not found' });

@@ -38,6 +38,12 @@ interface AppState {
   deleteNote: (id: string) => Promise<void>;
   selectNote: (id: string) => void;
 
+  // Trash
+  trashNotes: Note[];
+  fetchTrashNotes: () => Promise<void>;
+  restoreNote: (id: string) => Promise<void>;
+  permanentDeleteNote: (id: string) => Promise<void>;
+
   // Categories
   categories: Category[];
   selectedCategoryId: string | null;
@@ -105,6 +111,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   logout: () => {
     api.setToken(null);
+    localStorage.removeItem("selectedNoteId");
     set({
       user: null,
       isAuthenticated: false,
@@ -120,6 +127,10 @@ export const useStore = create<AppState>((set, get) => ({
     if (!token) {
       set({ isAuthenticated: false });
       return;
+    }
+    const savedNoteId = localStorage.getItem("selectedNoteId");
+    if (savedNoteId) {
+      set({ selectedNoteId: savedNoteId });
     }
     try {
       const user = await api.getMe();
@@ -142,7 +153,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true });
     try {
       const notes = await api.getNotes(params);
-      const { sortBy } = get();
+      const { sortBy, selectedNoteId } = get();
       const sorted = [...notes].sort((a: any, b: any) => {
         if (sortBy === "createdAt")
           return (
@@ -157,12 +168,10 @@ export const useStore = create<AppState>((set, get) => ({
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
       });
-      set({ notes: sorted, isLoading: false });
-      const selectedNoteId = get().selectedNoteId;
-      if (selectedNoteId) {
-        const selectedNote = notes.find((n) => n.id === selectedNoteId) || null;
-        set({ selectedNote });
-      }
+      const selectedNote = selectedNoteId
+        ? notes.find((n) => n.id === selectedNoteId) || null
+        : null;
+      set({ notes: sorted, selectedNote, isLoading: false });
     } catch (error) {
       console.error("Failed to fetch notes:", error);
       set({ isLoading: false });
@@ -183,7 +192,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   updateNote: async (text, categoryId, tagIds) => {
-    const { selectedNoteId } = get();
+    const { selectedNoteId, sortBy } = get();
     if (!selectedNoteId) return;
     try {
       const payload: {
@@ -195,8 +204,8 @@ export const useStore = create<AppState>((set, get) => ({
         payload.categoryIds = categoryId ? [categoryId] : [];
       if (tagIds !== undefined) payload.tagIds = tagIds;
       const updated = await api.updateNote(selectedNoteId, payload);
-      set((state) => ({
-        notes: state.notes.map((n) =>
+      set((state) => {
+        const newNotes = state.notes.map((n) =>
           n.id === selectedNoteId
             ? {
                 ...n,
@@ -208,20 +217,33 @@ export const useStore = create<AppState>((set, get) => ({
                 updatedAt: updated.updatedAt,
               }
             : n,
-        ),
-        selectedNote:
-          state.selectedNote?.id === selectedNoteId
-            ? {
-                ...state.selectedNote,
-                text,
-                ...(payload.categoryIds && {
-                  categoryIds: payload.categoryIds,
-                }),
-                ...(payload.tagIds && { tagIds: payload.tagIds }),
-                updatedAt: updated.updatedAt,
-              }
-            : state.selectedNote,
-      }));
+        );
+        const sorted = [...newNotes].sort((a: any, b: any) => {
+          if (sortBy === "createdAt")
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          if (sortBy === "alphabetical") {
+            const aTitle = (a.text.split("\n")[0] || "").replace(/^#+\s*/, "");
+            const bTitle = (b.text.split("\n")[0] || "").replace(/^#+\s*/, "");
+            return aTitle.localeCompare(bTitle);
+          }
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        });
+        return {
+          notes: sorted,
+          selectedNote:
+            state.selectedNote?.id === selectedNoteId
+              ? {
+                  ...state.selectedNote,
+                  text,
+                  ...(payload.categoryIds && {
+                    categoryIds: payload.categoryIds,
+                  }),
+                  ...(payload.tagIds && { tagIds: payload.tagIds }),
+                  updatedAt: updated.updatedAt,
+                }
+              : state.selectedNote,
+        };
+      });
     } catch (error) {
       console.error("Failed to update note:", error);
     }
@@ -233,6 +255,9 @@ export const useStore = create<AppState>((set, get) => ({
       set((state) => {
         const newStarred = state.starredNoteIds.filter((sid) => sid !== id);
         localStorage.setItem("starredNotes", JSON.stringify(newStarred));
+        if (state.selectedNoteId === id) {
+          localStorage.removeItem("selectedNoteId");
+        }
         return {
           notes: state.notes.filter((n) => n.id !== id),
           selectedNoteId:
@@ -246,8 +271,43 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
+  // Trash
+  trashNotes: [],
+
+  fetchTrashNotes: async () => {
+    try {
+      const trashNotes = await api.getTrashNotes();
+      set({ trashNotes });
+    } catch (error) {
+      console.error("Failed to fetch trash notes:", error);
+    }
+  },
+
+  restoreNote: async (id) => {
+    try {
+      await api.restoreNote(id);
+      set((state) => ({
+        trashNotes: state.trashNotes.filter((n) => n.id !== id),
+      }));
+    } catch (error) {
+      console.error("Failed to restore note:", error);
+    }
+  },
+
+  permanentDeleteNote: async (id) => {
+    try {
+      await api.permanentDeleteNote(id);
+      set((state) => ({
+        trashNotes: state.trashNotes.filter((n) => n.id !== id),
+      }));
+    } catch (error) {
+      console.error("Failed to permanently delete note:", error);
+    }
+  },
+
   selectNote: (id) => {
     const note = get().notes.find((n) => n.id === id) || null;
+    localStorage.setItem("selectedNoteId", id);
     set({ selectedNoteId: id, selectedNote: note });
   },
 
@@ -396,7 +456,18 @@ export const useStore = create<AppState>((set, get) => ({
   },
   setSortBy: (v) => {
     localStorage.setItem("pref_sortBy", v);
-    set({ sortBy: v });
+    const { notes } = get();
+    const sorted = [...notes].sort((a: any, b: any) => {
+      if (v === "createdAt")
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (v === "alphabetical") {
+        const aTitle = (a.text.split("\n")[0] || "").replace(/^#+\s*/, "");
+        const bTitle = (b.text.split("\n")[0] || "").replace(/^#+\s*/, "");
+        return aTitle.localeCompare(bTitle);
+      }
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+    set({ sortBy: v, notes: sorted });
   },
   setTextDirection: (v) => {
     localStorage.setItem("pref_textDirection", v);

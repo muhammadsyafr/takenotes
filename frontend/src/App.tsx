@@ -5,7 +5,7 @@ import { Register } from "./components/Register";
 import { Layout } from "./components/Layout";
 
 function App() {
-  const { isAuthenticated, checkAuth, theme } = useStore();
+  const { isAuthenticated, checkAuth, theme, selectedNote } = useStore();
   const [currentHash, setCurrentHash] = useState(window.location.hash);
 
   useEffect(() => {
@@ -15,6 +15,15 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
+
+  useEffect(() => {
+    if (selectedNote) {
+      const title = (selectedNote.text.split("\n")[0] || "").replace(/^#+\s*/, "");
+      document.title = title ? `${title} - TakeNote` : "TakeNote";
+    } else {
+      document.title = "TakeNote";
+    }
+  }, [selectedNote]);
 
   useEffect(() => {
     const handleHashChange = () => setCurrentHash(window.location.hash);
