@@ -8,6 +8,7 @@ import {
   SidebarView,
   SortBy,
   TextDirection,
+  MobilePane,
 } from "../types";
 import { api } from "../lib/api";
 
@@ -79,6 +80,9 @@ interface AppState {
   setSelectedCategoryId: (id: string | null) => void;
   setSelectedTagId: (id: string | null) => void;
 
+  mobilePane: MobilePane;
+  setMobilePane: (pane: MobilePane) => void;
+
   // Preferences
   lineNumbers: boolean;
   highlightActiveLine: boolean;
@@ -119,6 +123,7 @@ export const useStore = create<AppState>((set, get) => ({
       selectedNoteId: null,
       selectedNote: null,
       starredNoteIds: [],
+      mobilePane: "list",
     });
   },
 
@@ -185,6 +190,7 @@ export const useStore = create<AppState>((set, get) => ({
         notes: [note, ...state.notes],
         selectedNoteId: note.id,
         selectedNote: note,
+        mobilePane: "editor",
       }));
     } catch (error) {
       console.error("Failed to create note:", error);
@@ -258,12 +264,14 @@ export const useStore = create<AppState>((set, get) => ({
         if (state.selectedNoteId === id) {
           localStorage.removeItem("selectedNoteId");
         }
+        const cleared = state.selectedNoteId === id;
         return {
           notes: state.notes.filter((n) => n.id !== id),
           selectedNoteId:
             state.selectedNoteId === id ? null : state.selectedNoteId,
           selectedNote: state.selectedNoteId === id ? null : state.selectedNote,
           starredNoteIds: newStarred,
+          ...(cleared ? { mobilePane: "list" } : {}),
         };
       });
     } catch (error) {
@@ -308,7 +316,7 @@ export const useStore = create<AppState>((set, get) => ({
   selectNote: (id) => {
     const note = get().notes.find((n) => n.id === id) || null;
     localStorage.setItem("selectedNoteId", id);
-    set({ selectedNoteId: id, selectedNote: note });
+    set({ selectedNoteId: id, selectedNote: note, mobilePane: "editor" });
   },
 
   // Categories
@@ -424,6 +432,9 @@ export const useStore = create<AppState>((set, get) => ({
   scratchpadView: "editor",
   searchQuery: "",
   isLoading: false,
+  mobilePane: "list",
+
+  setMobilePane: (pane) => set({ mobilePane: pane }),
 
   setTheme: (theme) => set({ theme }),
   setViewMode: (mode) => set({ viewMode: mode }),

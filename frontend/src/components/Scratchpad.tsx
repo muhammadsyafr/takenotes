@@ -111,9 +111,9 @@ export function Scratchpad() {
       </div>
 
       {/* Editor/Preview */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         {scratchpadView === 'preview' ? (
-          <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="h-full overflow-y-auto overscroll-contain bg-white dark:bg-gray-900 min-h-0">
             <div className="max-w-3xl mx-auto markdown-preview">
               <ReactMarkdown>{text}</ReactMarkdown>
             </div>

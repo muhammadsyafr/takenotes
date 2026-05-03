@@ -7,6 +7,7 @@ import {
   Tag,
   Folder,
   Star,
+  ChevronLeft,
 } from "lucide-react";
 
 export function NoteList() {
@@ -27,6 +28,7 @@ export function NoteList() {
     setSelectedCategoryId,
     starredNoteIds,
     toggleStar,
+    setMobilePane,
   } = useStore();
 
   const handleSearch = (value: string) => {
@@ -73,6 +75,14 @@ export function NoteList() {
     <div className="flex flex-col h-full">
       {/* Search and Add */}
       <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+        <button
+          type="button"
+          onClick={() => setMobilePane("sidebar")}
+          className="md:hidden flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 mb-3 -ml-0.5"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          Folders
+        </button>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -147,7 +157,7 @@ export function NoteList() {
       )}
 
       {/* Notes List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
         {notes.length === 0 ? (
           <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />

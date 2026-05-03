@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import {
   Plus,
@@ -62,12 +62,22 @@ export function Sidebar() {
     toggleStar,
     selectNote,
     selectedNoteId,
+    setMobilePane,
   } = useStore();
 
-  // Collapse state: isPinned = sidebar stays open; hover temporarily opens it
+  const [isMdUp, setIsMdUp] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsMdUp(mq.matches);
+    const onChange = () => setIsMdUp(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Collapse state (desktop only): isPinned = sidebar stays open; hover temporarily opens it
   const [isPinned, setIsPinned] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const isOpen = isPinned || isHovered;
+  const isOpen = !isMdUp || isPinned || isHovered;
 
   const [newItemName, setNewItemName] = useState("");
   const [newItemColor, setNewItemColor] = useState(TAG_COLORS[0]);
@@ -114,6 +124,7 @@ export function Sidebar() {
       setSelectedTagId(newId);
       fetchNotes({ tagId: newId || undefined });
     }
+    setMobilePane("list");
   };
 
   const startEdit = (id: string, name: string, color: string) => {
@@ -138,19 +149,26 @@ export function Sidebar() {
         setSelectedCategoryId(null);
         setSelectedTagId(null);
         fetchNotes();
+        setMobilePane("list");
       },
     },
     {
       view: "categories" as const,
       icon: <Folder className="w-4 h-4 flex-shrink-0" />,
       label: "Folders",
-      onClick: () => setSidebarView("categories"),
+      onClick: () => {
+        setSidebarView("categories");
+        setMobilePane("list");
+      },
     },
     {
       view: "tags" as const,
       icon: <Tag className="w-4 h-4 flex-shrink-0" />,
       label: "Tags",
-      onClick: () => setSidebarView("tags"),
+      onClick: () => {
+        setSidebarView("tags");
+        setMobilePane("list");
+      },
     },
     {
       view: "trash" as const,
@@ -158,15 +176,19 @@ export function Sidebar() {
       label: "Trash",
       onClick: () => {
         setSidebarView("trash");
+        setMobilePane("list");
       },
     },
   ];
 
   return (
     <div
-      className={`relative flex-shrink-0 flex flex-col bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200 overflow-hidden ${isOpen ? "w-52" : "w-14"}`}
-      onMouseEnter={() => setIsHovered(true)}
+      className={`relative flex-shrink-0 flex flex-col bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200 overflow-hidden min-h-0 w-full ${
+        isMdUp ? (isOpen ? "md:w-52" : "md:w-14") : ""
+      }`}
+      onMouseEnter={() => isMdUp && setIsHovered(true)}
       onMouseLeave={() => {
+        if (!isMdUp) return;
         setIsHovered(false);
         if (!isPinned) setIsAddingNew(false);
       }}
@@ -174,7 +196,10 @@ export function Sidebar() {
       {/* Scratchpad button */}
       <div className="border-b border-gray-200 dark:border-gray-700 p-2">
         <button
-          onClick={() => setSidebarView("scratchpad")}
+          onClick={() => {
+            setSidebarView("scratchpad");
+            setMobilePane("list");
+          }}
           title={!isOpen ? "Scratchpad" : undefined}
           className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
             sidebarView === "scratchpad"
@@ -271,7 +296,7 @@ export function Sidebar() {
           )}
 
           {/* List */}
-          <div className="flex-1 overflow-y-auto px-2 pb-2">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-2 pb-2 min-h-0">
             {sidebarView === "notes" && (
               <div className="space-y-0.5">
                 {starredNoteIds.length === 0 ? (
@@ -578,11 +603,14 @@ export function Sidebar() {
       {/* Spacer to keep toggle at bottom */}
       <div className="flex-1" />
 
-      {/* Toggle / Pin button */}
+      {/* Toggle / Pin button (desktop) */}
       <div
-        className={`flex items-center border-t border-gray-200 dark:border-gray-700 px-2 py-2 ${isOpen ? "justify-end" : "justify-center"}`}
+        className={`hidden md:flex items-center border-t border-gray-200 dark:border-gray-700 px-2 py-2 ${
+          isOpen ? "justify-end" : "justify-center"
+        }`}
       >
         <button
+          type="button"
           onClick={() => setIsPinned(!isPinned)}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           title={isPinned ? "Collapse sidebar" : "Pin sidebar open"}

@@ -27,6 +27,7 @@ function Toggle({
 }) {
   return (
     <button
+      type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none ${
         checked ? "bg-primary-600" : "bg-gray-300 dark:bg-gray-600"
@@ -51,8 +52,8 @@ function SettingRow({
   control: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-      <div className="flex-1 mr-8">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <div className="flex-1 min-w-0 sm:mr-8">
         <p className="text-sm font-semibold text-gray-900 dark:text-white">
           {title}
         </p>
@@ -60,7 +61,7 @@ function SettingRow({
           {description}
         </p>
       </div>
-      {control}
+      <div className="flex-shrink-0 sm:self-center">{control}</div>
     </div>
   );
 }
@@ -81,10 +82,10 @@ function DataRow({
   loading?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
-      <div className="flex items-start gap-3 flex-1 mr-8">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-4 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <div className="flex items-start gap-3 flex-1 min-w-0 sm:mr-8">
         <Icon className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 dark:text-white">
             {title}
           </p>
@@ -94,9 +95,10 @@ function DataRow({
         </div>
       </div>
       <button
+        type="button"
         onClick={onClick}
         disabled={loading}
-        className="flex-shrink-0 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors disabled:opacity-50"
+        className="w-full sm:w-auto flex-shrink-0 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors disabled:opacity-50"
       >
         {loading ? "Working…" : buttonLabel}
       </button>
@@ -287,46 +289,49 @@ export function Settings({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-stretch justify-center md:items-center md:p-4 bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-[780px] max-w-[95vw] h-[560px] max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white dark:bg-gray-900 shadow-2xl w-full h-full max-h-dvh md:rounded-xl md:w-[780px] md:max-w-[95vw] md:h-[560px] md:max-h-[90vh] flex flex-col overflow-hidden min-h-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 md:px-6 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 min-w-0">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate max-w-[min(100%,14rem)] md:max-w-none">
               {user?.email}
             </span>
             <button
+              type="button"
               onClick={() => {
                 logout();
                 onClose();
               }}
-              className="px-3 py-1.5 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex-shrink-0"
             >
               Log out
             </button>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors flex-shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left nav */}
-          <div className="w-52 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 p-3 space-y-0.5">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
+          {/* Nav — horizontal scroll on mobile, sidebar on md+ */}
+          <div className="flex flex-row md:flex-col w-full md:w-52 flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 p-2 md:p-3 gap-1 md:space-y-0.5 overflow-x-auto overscroll-x-contain [scrollbar-width:thin]">
             {navItems.map((item) => (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setSection(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-shrink-0 whitespace-nowrap flex items-center gap-2 md:gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   section === item.id
                     ? "bg-gray-900 dark:bg-gray-700 text-white"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -339,7 +344,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Right content */}
-          <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-8 py-4 md:py-6 min-h-0">
             {/* Preferences */}
             {section === "preferences" && (
               <div>
@@ -440,12 +445,12 @@ export function Settings({ onClose }: { onClose: () => void }) {
                   {SHORTCUTS.map((s) => (
                     <div
                       key={s.keys}
-                      className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                      className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3 border-b border-gray-100 dark:border-gray-700 last:border-0"
                     >
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         {s.description}
                       </span>
-                      <kbd className="px-2.5 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg">
+                      <kbd className="self-start sm:self-auto px-2.5 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg">
                         {s.keys}
                       </kbd>
                     </div>

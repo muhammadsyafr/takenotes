@@ -33,7 +33,7 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-dvh bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
         <div className="w-full max-w-md">
           {currentHash === "#register" ? <Register /> : <Login />}
         </div>

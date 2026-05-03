@@ -6,7 +6,15 @@ import { languages } from "@codemirror/language-data";
 import { scrollPastEnd as scrollPastEndExt } from "@codemirror/view";
 import { githubLight, githubDark } from "@uiw/codemirror-theme-github";
 import ReactMarkdown from "react-markdown";
-import { Folder, Tag, ChevronDown, Check, Save, Loader2 } from "lucide-react";
+import {
+  Folder,
+  Tag,
+  ChevronDown,
+  Check,
+  Save,
+  Loader2,
+  ChevronLeft,
+} from "lucide-react";
 
 export function Editor() {
   const {
@@ -22,6 +30,7 @@ export function Editor() {
     highlightActiveLine,
     scrollPastEnd,
     textDirection,
+    setMobilePane,
   } = useStore();
 
   const [localText, setLocalText] = useState("");
@@ -117,7 +126,7 @@ export function Editor() {
 
   if (!selectedNote) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="hidden md:flex flex-1 items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center text-gray-500 dark:text-gray-400">
           <svg
             className="w-16 h-16 mx-auto mb-4 opacity-50"
@@ -144,8 +153,16 @@ export function Editor() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden border-l border-r border-gray-200 dark:border-gray-700">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-2 py-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 gap-2">
-        <div className="flex items-center gap-0.5">
+      <div className="flex items-center justify-between px-2 py-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 gap-1 md:gap-2 min-w-0 flex-shrink-0">
+        <div className="flex items-center gap-1 md:gap-0.5 min-w-0 flex-1 overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setMobilePane("list")}
+            className="md:hidden flex items-center gap-0.5 flex-shrink-0 text-sm font-medium text-primary-600 dark:text-primary-400 py-1 pr-1"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            Notes
+          </button>
           {/* Folder Selector */}
           <div className="relative" ref={folderRef}>
             <button
@@ -167,7 +184,7 @@ export function Editor() {
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
             {showFolderMenu && (
-              <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 w-48 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                 <div className="p-1">
                   <button
                     onClick={() => handleSelectFolder(null)}
@@ -220,7 +237,7 @@ export function Editor() {
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
             {showTagMenu && (
-              <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 w-56 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
                 <div className="p-2 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex gap-1">
                     <input
@@ -276,9 +293,10 @@ export function Editor() {
         </div>
 
         <button
+          type="button"
           onClick={handleSave}
           disabled={!hasChanges || isSaving}
-          className={`p-1.5 rounded transition-colors ${
+          className={`flex-shrink-0 p-1.5 rounded transition-colors ${
             hasChanges
               ? "text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900"
               : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
@@ -294,7 +312,7 @@ export function Editor() {
       </div>
 
       {/* Editor/Preview */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         {viewMode === "editor" ? (
           <CodeMirror
             value={localText}
@@ -315,7 +333,7 @@ export function Editor() {
             }}
           />
         ) : (
-          <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="h-full overflow-y-auto overscroll-contain bg-white dark:bg-gray-900 min-h-0">
             <div
               className="max-w-3xl mx-auto markdown-preview"
               dir={textDirection}

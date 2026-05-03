@@ -72,16 +72,16 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
   };
 
   const btn = (active = false, danger = false) =>
-    `p-1.5 rounded transition-colors text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 ${
+    `p-2 md:p-1.5 rounded transition-colors text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0 ${
       active ? 'text-primary-500 dark:text-primary-400' : ''
     } ${danger ? 'hover:text-red-500 dark:hover:text-red-400' : 'hover:text-gray-700 dark:hover:text-gray-200'}`;
 
   const disabledIfNoNote = !selectedNote ? 'opacity-30 cursor-not-allowed pointer-events-none' : '';
 
   return (
-    <div className="h-8 flex-shrink-0 flex items-center justify-between px-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+    <div className="h-10 md:h-8 flex-shrink-0 flex items-center justify-between gap-2 px-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 min-w-0">
       {/* Left — note/scratchpad actions */}
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-0.5 min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {isScratchpad ? (
           <>
             <button
@@ -153,13 +153,13 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
       </div>
 
       {/* Right — global controls */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         {selectedNote && (
-          <span className="text-xs font-mono text-gray-400 dark:text-gray-500 select-none">
+          <span className="hidden sm:inline text-xs font-mono text-gray-400 dark:text-gray-500 select-none">
             {formatTimestamp(selectedNote.updatedAt)}
           </span>
         )}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           <button onClick={() => fetchNotes()} className={btn()} title="Refresh notes">
             <RefreshCw className="w-3.5 h-3.5" />
           </button>

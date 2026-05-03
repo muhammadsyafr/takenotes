@@ -43,3 +43,6 @@ export type ViewMode = "editor" | "preview";
 export type SidebarView = "notes" | "categories" | "tags" | "scratchpad" | "trash";
 export type SortBy = "updatedAt" | "createdAt" | "alphabetical";
 export type TextDirection = "ltr" | "rtl";
+
+/** Mobile (below md breakpoint): which pane is visible. For scratchpad/trash, "list" means main content panel. */
+export type MobilePane = "sidebar" | "list" | "editor";
