@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../store';
-import { StickyNote, Mail, Lock, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { StickyNote, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 
 export function Login() {
   const [email, setEmail] = useState('');
