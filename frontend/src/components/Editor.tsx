@@ -154,7 +154,7 @@ export function Editor() {
     <div className="flex-1 flex flex-col overflow-hidden border-l border-r border-gray-200 dark:border-gray-700">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-2 py-1 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 gap-1 md:gap-2 min-w-0 flex-shrink-0">
-        <div className="flex items-center gap-1 md:gap-0.5 min-w-0 flex-1 overflow-x-auto">
+        <div className="flex items-center gap-1 md:gap-0.5 min-w-0 flex-1 overflow-visible">
           <button
             type="button"
             onClick={() => setMobilePane("list")}
@@ -166,6 +166,7 @@ export function Editor() {
           {/* Folder Selector */}
           <div className="relative" ref={folderRef}>
             <button
+              type="button"
               onClick={() => setShowFolderMenu(!showFolderMenu)}
               title={selectedFolder ? selectedFolder.name : "Select folder"}
               className={`flex items-center gap-1 px-2 py-1.5 rounded text-sm transition-colors ${
@@ -184,7 +185,7 @@ export function Editor() {
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
             {showFolderMenu && (
-              <div className="absolute top-full left-0 mt-1 w-48 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                 <div className="p-1">
                   <button
                     onClick={() => handleSelectFolder(null)}
@@ -218,6 +219,7 @@ export function Editor() {
           {/* Tags Selector */}
           <div className="relative" ref={tagRef}>
             <button
+              type="button"
               onClick={() => setShowTagMenu(!showTagMenu)}
               title={
                 noteTagIds.length > 0
@@ -237,7 +239,7 @@ export function Editor() {
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
             {showTagMenu && (
-              <div className="absolute top-full left-0 mt-1 w-56 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+              <div className="absolute top-full left-0 mt-1 w-56 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                 <div className="p-2 border-b border-gray-100 dark:border-gray-700">
                   <div className="flex gap-1">
                     <input

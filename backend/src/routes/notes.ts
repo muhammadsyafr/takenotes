@@ -208,7 +208,11 @@ router.put('/:id', authenticateToken, (req: AuthRequest, res: Response) => {
     }
 
     const note = db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id) as any;
-    res.json({ ...note, createdAt: note?.created_at, updatedAt: now });
+    const categoryRows = db.prepare('SELECT category_id FROM note_categories WHERE note_id = ?').all(req.params.id) as any[];
+    const tagRows = db.prepare('SELECT tag_id FROM note_tags WHERE note_id = ?').all(req.params.id) as any[];
+    const assignedCategoryIds = categoryRows.map((r) => r.category_id);
+    const assignedTagIds = tagRows.map((r) => r.tag_id);
+    res.json({ ...note, categoryIds: assignedCategoryIds, tagIds: assignedTagIds, createdAt: note?.created_at, updatedAt: now });
   } catch (error) {
     console.error('Update note error:', error);
     res.status(500).json({ error: 'Failed to update note' });
