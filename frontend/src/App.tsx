@@ -3,6 +3,7 @@ import { useStore } from "./store";
 import { Login } from "./components/Login";
 import { Register } from "./components/Register";
 import { Layout } from "./components/Layout";
+import { Toast } from "./components/Toast";
 
 function App() {
   const { isAuthenticated, checkAuth, theme, selectedNote } = useStore();
@@ -37,11 +38,17 @@ function App() {
         <div className="w-full max-w-md">
           {currentHash === "#register" ? <Register /> : <Login />}
         </div>
+        <Toast />
       </div>
     );
   }
 
-  return <Layout />;
+  return (
+    <>
+      <Layout />
+      <Toast />
+    </>
+  );
 }
 
 export default App;

@@ -83,6 +83,11 @@ interface AppState {
   mobilePane: MobilePane;
   setMobilePane: (pane: MobilePane) => void;
 
+  // Toast
+  toast: { message: string; type: 'success' | 'error' } | null;
+  showToast: (message: string, type: 'success' | 'error') => void;
+  hideToast: () => void;
+
   // Preferences
   lineNumbers: boolean;
   highlightActiveLine: boolean;
@@ -105,12 +110,18 @@ export const useStore = create<AppState>((set, get) => ({
     const response = await api.login(email, password);
     api.setToken(response.token);
     set({ user: response.user, isAuthenticated: true });
+    await get().fetchNotes();
+    await get().fetchCategories();
+    await get().fetchTags();
   },
 
   register: async (email, password) => {
     const response = await api.register(email, password);
     api.setToken(response.token);
     set({ user: response.user, isAuthenticated: true });
+    await get().fetchNotes();
+    await get().fetchCategories();
+    await get().fetchTags();
   },
 
   logout: () => {
@@ -435,6 +446,18 @@ export const useStore = create<AppState>((set, get) => ({
   mobilePane: "list",
 
   setMobilePane: (pane) => set({ mobilePane: pane }),
+
+  // Toast
+  toast: null,
+
+  showToast: (message, type) => {
+    set({ toast: { message, type } });
+    setTimeout(() => {
+      set({ toast: null });
+    }, type === 'error' ? 5000 : 3000);
+  },
+
+  hideToast: () => set({ toast: null }),
 
   setTheme: (theme) => set({ theme }),
   setViewMode: (mode) => set({ viewMode: mode }),

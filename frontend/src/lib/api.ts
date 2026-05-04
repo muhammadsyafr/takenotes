@@ -37,8 +37,7 @@ class ApiClient {
 
     if (response.status === 401) {
       this.setToken(null);
-      window.location.href = '/login';
-      throw new Error('Unauthorized');
+      throw new Error('Invalid email or password');
     }
 
     if (!response.ok) {
