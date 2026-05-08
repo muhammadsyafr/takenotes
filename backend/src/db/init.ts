@@ -76,5 +76,17 @@ export function initializeDatabase() {
     // Column already exists, ignore
   }
 
+  // Create scratchpad table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS scratchpads (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL UNIQUE,
+      text TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
+
   console.log('Database initialized successfully');
 }

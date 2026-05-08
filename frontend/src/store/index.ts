@@ -16,10 +16,16 @@ interface AppState {
   // Auth
   user: { id: string; email: string } | null;
   isAuthenticated: boolean;
+  isAuthLoading: boolean;
+  isDataLoading: boolean;
+  scratchpadText: string;
+  scratchpadUpdatedAt: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  fetchScratchpad: () => Promise<void>;
+  updateScratchpad: (text: string) => Promise<void>;
 
   // Notes
   notes: Note[];
@@ -69,12 +75,14 @@ interface AppState {
   theme: Theme;
   viewMode: ViewMode;
   sidebarView: SidebarView;
+  sidebarPinned: boolean;
   scratchpadView: 'editor' | 'preview';
   searchQuery: string;
   isLoading: boolean;
   setTheme: (theme: Theme) => void;
   setViewMode: (mode: ViewMode) => void;
   setSidebarView: (view: SidebarView) => void;
+  setSidebarPinned: (pinned: boolean) => void;
   setScratchpadView: (view: 'editor' | 'preview') => void;
   setSearchQuery: (query: string) => void;
   setSelectedCategoryId: (id: string | null) => void;
@@ -105,23 +113,33 @@ export const useStore = create<AppState>((set, get) => ({
   // Auth
   user: null,
   isAuthenticated: false,
+  isAuthLoading: true,
+  isDataLoading: true,
+  scratchpadText: '',
+  scratchpadUpdatedAt: null,
 
   login: async (email, password) => {
+    set({ isDataLoading: true });
     const response = await api.login(email, password);
     api.setToken(response.token);
-    set({ user: response.user, isAuthenticated: true });
+    set({ user: response.user, isAuthenticated: true, isAuthLoading: false });
     await get().fetchNotes();
     await get().fetchCategories();
     await get().fetchTags();
+    await get().fetchScratchpad();
+    set({ isDataLoading: false });
   },
 
   register: async (email, password) => {
+    set({ isDataLoading: true });
     const response = await api.register(email, password);
     api.setToken(response.token);
-    set({ user: response.user, isAuthenticated: true });
+    set({ user: response.user, isAuthenticated: true, isAuthLoading: false });
     await get().fetchNotes();
     await get().fetchCategories();
     await get().fetchTags();
+    await get().fetchScratchpad();
+    set({ isDataLoading: false });
   },
 
   logout: () => {
@@ -130,18 +148,22 @@ export const useStore = create<AppState>((set, get) => ({
     set({
       user: null,
       isAuthenticated: false,
+      isAuthLoading: false,
+      isDataLoading: false,
       notes: [],
       selectedNoteId: null,
       selectedNote: null,
       starredNoteIds: [],
       mobilePane: "list",
+      scratchpadText: '',
+      scratchpadUpdatedAt: null,
     });
   },
 
   checkAuth: async () => {
     const token = api.getToken();
     if (!token) {
-      set({ isAuthenticated: false });
+      set({ isAuthenticated: false, isAuthLoading: false, isDataLoading: false });
       return;
     }
     const savedNoteId = localStorage.getItem("selectedNoteId");
@@ -154,9 +176,29 @@ export const useStore = create<AppState>((set, get) => ({
       await get().fetchNotes();
       await get().fetchCategories();
       await get().fetchTags();
+      await get().fetchScratchpad();
+      set({ isAuthLoading: false, isDataLoading: false });
     } catch {
       api.setToken(null);
-      set({ isAuthenticated: false });
+      set({ isAuthenticated: false, isAuthLoading: false, isDataLoading: false });
+    }
+  },
+
+  fetchScratchpad: async () => {
+    try {
+      const scratchpad = await api.getScratchpad();
+      set({ scratchpadText: scratchpad.text, scratchpadUpdatedAt: scratchpad.updatedAt });
+    } catch (error) {
+      console.error('Failed to fetch scratchpad:', error);
+    }
+  },
+
+  updateScratchpad: async (text) => {
+    try {
+      const scratchpad = await api.updateScratchpad(text);
+      set({ scratchpadText: scratchpad.text, scratchpadUpdatedAt: scratchpad.updatedAt });
+    } catch (error) {
+      console.error('Failed to update scratchpad:', error);
     }
   },
 
@@ -439,7 +481,8 @@ export const useStore = create<AppState>((set, get) => ({
   // UI
   theme: "dark",
   viewMode: "editor",
-  sidebarView: "notes",
+  sidebarView: (localStorage.getItem("sidebarView") as SidebarView) || "notes",
+  sidebarPinned: localStorage.getItem("sidebarPinned") === "true",
   scratchpadView: "editor",
   searchQuery: "",
   isLoading: false,
@@ -461,7 +504,15 @@ export const useStore = create<AppState>((set, get) => ({
 
   setTheme: (theme) => set({ theme }),
   setViewMode: (mode) => set({ viewMode: mode }),
-  setSidebarView: (view) => set({ sidebarView: view }),
+  setSidebarView: (view) => {
+    localStorage.setItem("sidebarView", view);
+    set({ sidebarView: view });
+  },
+
+  setSidebarPinned: (pinned) => {
+    localStorage.setItem("sidebarPinned", String(pinned));
+    set({ sidebarPinned: pinned });
+  },
   setScratchpadView: (view) => set({ scratchpadView: view }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSelectedCategoryId: (id) => set({ selectedCategoryId: id }),

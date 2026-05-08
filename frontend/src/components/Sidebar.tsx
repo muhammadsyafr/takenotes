@@ -75,9 +75,9 @@ export function Sidebar() {
   }, []);
 
   // Collapse state (desktop only): isPinned = sidebar stays open; hover temporarily opens it
-  const [isPinned, setIsPinned] = useState(false);
+  const { sidebarPinned, setSidebarPinned } = useStore();
   const [isHovered, setIsHovered] = useState(false);
-  const isOpen = !isMdUp || isPinned || isHovered;
+  const isOpen = !isMdUp || sidebarPinned || isHovered;
 
   const [newItemName, setNewItemName] = useState("");
   const [newItemColor, setNewItemColor] = useState(TAG_COLORS[0]);
@@ -190,7 +190,7 @@ export function Sidebar() {
       onMouseLeave={() => {
         if (!isMdUp) return;
         setIsHovered(false);
-        if (!isPinned) setIsAddingNew(false);
+        if (!sidebarPinned) setIsAddingNew(false);
       }}
     >
       {/* Scratchpad button */}
@@ -611,11 +611,11 @@ export function Sidebar() {
       >
         <button
           type="button"
-          onClick={() => setIsPinned(!isPinned)}
+          onClick={() => setSidebarPinned(!sidebarPinned)}
           className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title={isPinned ? "Collapse sidebar" : "Pin sidebar open"}
+          title={sidebarPinned ? "Collapse sidebar" : "Pin sidebar open"}
         >
-          {isPinned ? (
+          {sidebarPinned ? (
             <ChevronLeft className="w-4 h-4" />
           ) : (
             <ChevronRight className="w-4 h-4" />

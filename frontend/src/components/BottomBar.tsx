@@ -20,6 +20,7 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
     fetchNotes,
     notes,
     sidebarView,
+    scratchpadText,
   } = useStore();
 
   const isStarred = selectedNote ? starredNoteIds.includes(selectedNote.id) : false;
@@ -41,9 +42,8 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
   };
 
   const handleExportScratchpad = () => {
-    const text = localStorage.getItem('scratchpad') || '';
-    if (!text) return;
-    const blob = new Blob([text], { type: 'text/markdown' });
+    if (!scratchpadText) return;
+    const blob = new Blob([scratchpadText], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -86,7 +86,6 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
           <>
             <button
               onClick={() => {
-                const scratchpadText = localStorage.getItem('scratchpad') || '';
                 if (scratchpadText) {
                   setScratchpadView(scratchpadView === 'preview' ? 'editor' : 'preview');
                 }

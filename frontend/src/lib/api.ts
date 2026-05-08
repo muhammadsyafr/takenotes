@@ -160,6 +160,18 @@ class ApiClient {
   async deleteTag(id: string) {
     return this.request<void>(`/tags/${id}`, { method: 'DELETE' });
   }
+
+  // Scratchpad
+  async getScratchpad() {
+    return this.request<{ text: string; updatedAt: string }>('/scratchpad');
+  }
+
+  async updateScratchpad(text: string) {
+    return this.request<{ text: string; updatedAt: string }>('/scratchpad', {
+      method: 'PUT',
+      body: JSON.stringify({ text }),
+    });
+  }
 }
 
 export const api = new ApiClient();

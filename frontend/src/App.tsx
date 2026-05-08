@@ -6,7 +6,7 @@ import { Layout } from "./components/Layout";
 import { Toast } from "./components/Toast";
 
 function App() {
-  const { isAuthenticated, checkAuth, theme, selectedNote } = useStore();
+  const { isAuthenticated, isAuthLoading, isDataLoading, checkAuth, theme, selectedNote } = useStore();
   const [currentHash, setCurrentHash] = useState(window.location.hash);
 
   useEffect(() => {
@@ -31,6 +31,18 @@ function App() {
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
+
+  if (isAuthLoading || isDataLoading) {
+    return (
+      <div className="min-h-dvh bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

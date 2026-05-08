@@ -7,31 +7,29 @@ import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 import ReactMarkdown from 'react-markdown';
 import { Eraser, Download, NotebookPen, Check, Eye } from 'lucide-react';
 
-const STORAGE_KEY = 'scratchpad';
-
 export function Scratchpad() {
-  const { theme, scratchpadView, setScratchpadView } = useStore();
-  const [text, setText] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
+  const { theme, scratchpadView, setScratchpadView, scratchpadText, scratchpadUpdatedAt, updateScratchpad } = useStore();
+  const [text, setText] = useState(scratchpadText);
   const [isSaved, setIsSaved] = useState(true);
-  const [lastSaved, setLastSaved] = useState<Date | null>(
-    localStorage.getItem(STORAGE_KEY) !== null ? new Date() : null
-  );
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const save = useCallback((value: string) => {
-    localStorage.setItem(STORAGE_KEY, value);
+  useEffect(() => {
+    setText(scratchpadText);
+  }, [scratchpadText]);
+
+  const handleSave = useCallback(async (value: string) => {
     setIsSaved(true);
-    setLastSaved(new Date());
-  }, []);
+    await updateScratchpad(value);
+  }, [updateScratchpad]);
 
   const handleChange = useCallback(
     (value: string) => {
       setText(value);
       setIsSaved(false);
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => save(value), 600);
+      saveTimer.current = setTimeout(() => handleSave(value), 600);
     },
-    [save]
+    [handleSave]
   );
 
   useEffect(() => {
@@ -40,11 +38,22 @@ export function Scratchpad() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave(text);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [text, handleSave]);
+
   const handleClear = () => {
     if (!text.trim()) return;
     if (window.confirm('Clear all scratchpad content?')) {
       setText('');
-      save('');
+      handleSave('');
     }
   };
 
@@ -59,8 +68,8 @@ export function Scratchpad() {
   };
 
   const formatLastSaved = () => {
-    if (!lastSaved) return 'Not saved yet';
-    return `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    if (!scratchpadUpdatedAt) return 'Not saved yet';
+    return `Saved ${new Date(scratchpadUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;

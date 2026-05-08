@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import notesRoutes from './routes/notes';
 import categoriesRoutes from './routes/categories';
 import tagsRoutes from './routes/tags';
+import scratchpadRoutes from './routes/scratchpad';
 
 const envPath = path.resolve(process.cwd(), '.env');
 const envPathBackup = path.resolve(process.cwd(), '../.env');
@@ -28,6 +29,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notes', notesRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/tags', tagsRoutes);
+app.use('/api/scratchpad', scratchpadRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
