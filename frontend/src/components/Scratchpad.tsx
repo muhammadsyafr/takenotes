@@ -7,29 +7,31 @@ import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 import ReactMarkdown from 'react-markdown';
 import { Eraser, Download, NotebookPen, Check, Eye } from 'lucide-react';
 
+const STORAGE_KEY = 'scratchpad';
+
 export function Scratchpad() {
-  const { theme, scratchpadView, setScratchpadView, scratchpadText, scratchpadUpdatedAt, updateScratchpad } = useStore();
-  const [text, setText] = useState(scratchpadText);
+  const { theme, scratchpadView, setScratchpadView } = useStore();
+  const [text, setText] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
   const [isSaved, setIsSaved] = useState(true);
+  const [lastSaved, setLastSaved] = useState<Date | null>(
+    localStorage.getItem(STORAGE_KEY) !== null ? new Date() : null
+  );
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    setText(scratchpadText);
-  }, [scratchpadText]);
-
-  const handleSave = useCallback(async (value: string) => {
+  const save = useCallback((value: string) => {
+    localStorage.setItem(STORAGE_KEY, value);
     setIsSaved(true);
-    await updateScratchpad(value);
-  }, [updateScratchpad]);
+    setLastSaved(new Date());
+  }, []);
 
   const handleChange = useCallback(
     (value: string) => {
       setText(value);
       setIsSaved(false);
       if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => handleSave(value), 600);
+      saveTimer.current = setTimeout(() => save(value), 600);
     },
-    [handleSave]
+    [save]
   );
 
   useEffect(() => {
@@ -38,22 +40,11 @@ export function Scratchpad() {
     };
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        handleSave(text);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [text, handleSave]);
-
   const handleClear = () => {
     if (!text.trim()) return;
     if (window.confirm('Clear all scratchpad content?')) {
       setText('');
-      handleSave('');
+      save('');
     }
   };
 
@@ -68,49 +59,55 @@ export function Scratchpad() {
   };
 
   const formatLastSaved = () => {
-    if (!scratchpadUpdatedAt) return 'Not saved yet';
-    return `Saved ${new Date(scratchpadUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    if (!lastSaved) return 'Not saved yet';
+    return `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
 
+  const toolBtn = 'flex items-center gap-1 px-2 py-1 text-xs rounded-patina-sm transition-colors';
+
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden bg-patina-surface">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="flex items-center gap-1.5">
-          <NotebookPen className="w-3.5 h-3.5 text-amber-500" />
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">Scratchpad</span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">— quick notes</span>
+      <div className="flex items-center justify-between px-4 py-2 border-b border-patina-border/[.06] bg-patina-surface flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 bg-amber-100 rounded-[10px] flex items-center justify-center flex-shrink-0">
+            <NotebookPen className="w-4 h-4 text-amber-600" />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm font-semibold text-patina-on-surface font-manrope">Scratchpad</span>
+            <span className="text-xs text-patina-muted">quick notes</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-600 rounded p-0.5">
+        <div className="flex items-center gap-0.5 border border-patina-border/[.08] rounded-patina-sm p-0.5">
           <button
             onClick={() => setScratchpadView(scratchpadView === 'preview' ? 'editor' : 'preview')}
-            className={`flex items-center gap-1 px-1.5 py-1 text-xs rounded transition-colors ${
+            className={`${toolBtn} ${
               scratchpadView === 'preview'
-                ? 'text-primary-500 dark:text-primary-400 bg-gray-200 dark:bg-gray-700'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                ? 'text-patina-primary bg-patina-tertiary'
+                : 'text-patina-secondary hover:bg-patina-tertiary/50'
             }`}
             title={scratchpadView === 'preview' ? 'Switch to editor' : 'Markdown preview'}
           >
             <Eye className="w-3 h-3" />
             Preview
           </button>
-          <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
+          <div className="w-px h-4 bg-patina-border/[.06]" />
           <button
             onClick={handleClear}
             disabled={!text.trim()}
-            className="flex items-center gap-1 px-1.5 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className={`${toolBtn} text-patina-secondary hover:bg-patina-tertiary/50 disabled:opacity-40 disabled:cursor-not-allowed`}
             title="Clear scratchpad"
           >
             <Eraser className="w-3 h-3" />
             Clear
           </button>
-          <div className="w-px h-4 bg-gray-200 dark:bg-gray-600" />
+          <div className="w-px h-4 bg-patina-border/[.06]" />
           <button
             onClick={handleExport}
             disabled={!text.trim()}
-            className="flex items-center gap-1 px-1.5 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className={`${toolBtn} text-patina-secondary hover:bg-patina-tertiary/50 disabled:opacity-40 disabled:cursor-not-allowed`}
             title="Export as .md"
           >
             <Download className="w-3 h-3" />
@@ -122,7 +119,7 @@ export function Scratchpad() {
       {/* Editor/Preview */}
       <div className="flex-1 overflow-hidden min-h-0">
         {scratchpadView === 'preview' ? (
-          <div className="h-full overflow-y-auto overscroll-contain bg-white dark:bg-gray-900 min-h-0">
+          <div className="h-full overflow-y-auto overscroll-contain bg-patina-surface min-h-0">
             <div className="max-w-3xl mx-auto markdown-preview">
               <ReactMarkdown>{text}</ReactMarkdown>
             </div>
@@ -146,7 +143,7 @@ export function Scratchpad() {
       </div>
 
       {/* Status Bar */}
-      <div className="px-2 py-1 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between items-center">
+      <div className="px-4 py-1.5 bg-patina-surface border-t border-patina-border/[.06] text-xs text-patina-muted flex justify-between items-center flex-shrink-0">
         <div className="flex items-center gap-1">
           {isSaved ? (
             <>

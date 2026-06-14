@@ -74,10 +74,9 @@ export function Sidebar() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  // Collapse state (desktop only): isPinned = sidebar stays open; hover temporarily opens it
-  const { sidebarPinned, setSidebarPinned } = useStore();
+  const [isPinned, setIsPinned] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const isOpen = !isMdUp || sidebarPinned || isHovered;
+  const isOpen = !isMdUp || isPinned || isHovered;
 
   const [newItemName, setNewItemName] = useState("");
   const [newItemColor, setNewItemColor] = useState(TAG_COLORS[0]);
@@ -183,28 +182,28 @@ export function Sidebar() {
 
   return (
     <div
-      className={`relative flex-shrink-0 flex flex-col bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200 overflow-hidden min-h-0 w-full ${
+      className={`relative flex-shrink-0 flex flex-col bg-patina-surface border-r border-patina-border/[.06] transition-all duration-200 overflow-hidden min-h-0 w-full ${
         isMdUp ? (isOpen ? "md:w-52" : "md:w-14") : ""
       }`}
       onMouseEnter={() => isMdUp && setIsHovered(true)}
       onMouseLeave={() => {
         if (!isMdUp) return;
         setIsHovered(false);
-        if (!sidebarPinned) setIsAddingNew(false);
+        if (!isPinned) setIsAddingNew(false);
       }}
     >
       {/* Scratchpad button */}
-      <div className="border-b border-gray-200 dark:border-gray-700 p-2">
+      <div className="border-b border-patina-border/[.06] p-2">
         <button
           onClick={() => {
             setSidebarView("scratchpad");
             setMobilePane("list");
           }}
           title={!isOpen ? "Scratchpad" : undefined}
-          className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`w-full flex items-center gap-2 px-2 py-2 rounded-patina-sm text-sm font-medium transition-colors ${
             sidebarView === "scratchpad"
-              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
-              : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+              ? "bg-amber-50 text-amber-600"
+              : "text-patina-secondary hover:bg-patina-tertiary"
           } ${!isOpen ? "justify-center" : ""}`}
         >
           <NotebookPen className="w-4 h-4 flex-shrink-0" />
@@ -213,16 +212,16 @@ export function Sidebar() {
       </div>
 
       {/* Nav items */}
-      <div className="p-2 space-y-0.5 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-2 space-y-0.5 border-b border-patina-border/[.06]">
         {navItems.map((item) => (
           <button
             key={item.view}
             onClick={item.onClick}
             title={!isOpen ? item.label : undefined}
-            className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`w-full flex items-center gap-2 px-2 py-2 rounded-patina-sm text-sm font-medium transition-colors ${
               sidebarView === item.view
-                ? "bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400"
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                ? "bg-patina-tertiary text-patina-primary"
+                : "text-patina-secondary hover:bg-patina-tertiary/60"
             } ${!isOpen ? "justify-center" : ""}`}
           >
             {item.icon}
@@ -235,8 +234,8 @@ export function Sidebar() {
       {isOpen && sidebarView !== "scratchpad" && sidebarView !== "trash" && (
         <>
           {/* Section header */}
-          <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          <div className="flex items-center justify-between px-3 py-2.5">
+            <span className="text-xs font-semibold text-patina-muted uppercase tracking-wider">
               {sidebarView === "notes"
                 ? "Starred"
                 : sidebarView === "categories"
@@ -246,31 +245,31 @@ export function Sidebar() {
             {sidebarView !== "notes" && (
               <button
                 onClick={() => setIsAddingNew(true)}
-                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-primary-600"
+                className="p-1 rounded-patina-sm hover:bg-patina-tertiary text-patina-muted hover:text-patina-primary transition-colors"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
           {/* New Item Form */}
           {isAddingNew && (
-            <div className="px-3 pb-2">
+            <div className="px-3 pb-3">
               <input
                 type="text"
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                 placeholder={`New ${sidebarView === "categories" ? "folder" : "tag"}`}
-                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white mb-2"
+                className="w-full px-3 py-2 text-sm border border-patina-border/[.10] rounded-patina-sm bg-patina-surface text-patina-on-surface placeholder-patina-muted mb-2 outline-none focus:border-patina-primary"
                 autoFocus
               />
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                 {colors.map((color) => (
                   <button
                     key={color}
                     onClick={() => setNewItemColor(color)}
-                    className={`w-5 h-5 rounded-full transition-transform ${newItemColor === color ? "scale-110 ring-2 ring-gray-400" : "hover:scale-105"}`}
+                    className={`w-4 h-4 rounded-full transition-transform ${newItemColor === color ? "scale-110 ring-2 ring-black/20" : "hover:scale-105"}`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -281,13 +280,13 @@ export function Sidebar() {
                     setIsAddingNew(false);
                     setNewItemName("");
                   }}
-                  className="flex-1 py-1.5 text-xs text-gray-500 hover:text-gray-700 bg-gray-100 dark:bg-gray-700 rounded"
+                  className="flex-1 py-1.5 text-xs text-patina-secondary hover:text-patina-on-surface bg-patina-neutral hover:bg-patina-tertiary rounded-patina-sm transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreate}
-                  className="flex-1 py-1.5 text-xs text-white bg-primary-600 hover:bg-primary-700 rounded"
+                  className="flex-1 py-1.5 text-xs text-white bg-patina-primary hover:bg-primary-600 rounded-patina-sm transition-colors"
                 >
                   Add
                 </button>
@@ -301,8 +300,8 @@ export function Sidebar() {
               <div className="space-y-0.5">
                 {starredNoteIds.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-6 text-center">
-                    <Star className="w-6 h-6 text-gray-300 dark:text-gray-600" />
-                    <p className="text-xs text-gray-400 dark:text-gray-500 px-2">
+                    <Star className="w-6 h-6 text-patina-muted/40" />
+                    <p className="text-xs text-patina-muted px-2">
                       Star notes to pin them here for quick access
                     </p>
                   </div>
@@ -321,22 +320,20 @@ export function Sidebar() {
                         <div
                           key={note.id}
                           onClick={() => selectNote(note.id)}
-                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
+                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-patina-sm cursor-pointer text-sm transition-colors ${
                             isSelected
-                              ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                              ? "bg-patina-tertiary text-patina-primary"
+                              : "hover:bg-patina-tertiary/50 text-patina-secondary"
                           }`}
                         >
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
-                          <span className="flex-1 truncate text-xs">
-                            {title}
-                          </span>
+                          <span className="flex-1 truncate text-xs">{title}</span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleStar(note.id);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-red-400 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-0.5 text-patina-muted hover:text-patina-error transition-opacity"
                             title="Unstar"
                           >
                             <X className="w-3 h-3" />
@@ -351,12 +348,12 @@ export function Sidebar() {
             {sidebarView !== "notes" && (
               <div className="space-y-0.5">
                 {sidebarView === "categories" && categories.length === 0 && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
+                  <p className="text-xs text-patina-muted text-center py-4">
                     No folders yet
                   </p>
                 )}
                 {sidebarView === "tags" && tags.length === 0 && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
+                  <p className="text-xs text-patina-muted text-center py-4">
                     No tags yet
                   </p>
                 )}
@@ -368,10 +365,10 @@ export function Sidebar() {
                     return (
                       <div key={cat.id}>
                         <div
-                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
+                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-patina-sm cursor-pointer text-sm transition-colors ${
                             selectedCategoryId === cat.id
-                              ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                              ? "bg-patina-tertiary text-patina-primary"
+                              : "hover:bg-patina-tertiary/50 text-patina-secondary"
                           }`}
                         >
                           {editingId === cat.id ? (
@@ -380,7 +377,7 @@ export function Sidebar() {
                                 type="text"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                                className="w-full px-2 py-1 text-sm border border-patina-border/[.10] rounded-patina-sm bg-patina-surface text-patina-on-surface outline-none focus:border-patina-primary"
                                 autoFocus
                               />
                               <div className="flex gap-1 flex-wrap">
@@ -388,7 +385,7 @@ export function Sidebar() {
                                   <button
                                     key={color}
                                     onClick={() => setEditColor(color)}
-                                    className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-gray-400" : ""}`}
+                                    className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-black/30" : ""}`}
                                     style={{ backgroundColor: color }}
                                   />
                                 ))}
@@ -396,13 +393,13 @@ export function Sidebar() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleEdit(cat.id)}
-                                  className="text-xs text-primary-600"
+                                  className="text-xs text-patina-primary font-medium"
                                 >
                                   Save
                                 </button>
                                 <button
                                   onClick={() => setEditingId(null)}
-                                  className="text-xs text-gray-500"
+                                  className="text-xs text-patina-muted"
                                 >
                                   Cancel
                                 </button>
@@ -428,13 +425,13 @@ export function Sidebar() {
                               >
                                 {cat.name}
                               </span>
-                              <span className="text-xs text-gray-400">{folderNotes.length}</span>
+                              <span className="text-xs text-patina-muted">{folderNotes.length}</span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   startEdit(cat.id, cat.name, cat.color);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600"
+                                className="opacity-0 group-hover:opacity-100 p-1 text-patina-muted hover:text-patina-secondary transition-opacity"
                               >
                                 <Edit2 className="w-3 h-3" />
                               </button>
@@ -443,7 +440,7 @@ export function Sidebar() {
                                   e.stopPropagation();
                                   deleteCategory(cat.id);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500"
+                                className="opacity-0 group-hover:opacity-100 p-1 text-patina-muted hover:text-patina-error transition-opacity"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
@@ -451,15 +448,15 @@ export function Sidebar() {
                           )}
                         </div>
                         {isExpanded && folderNotes.length > 0 && (
-                          <div className="ml-4 mt-1 space-y-0.5">
+                          <div className="ml-4 mt-0.5 space-y-0.5">
                             {folderNotes.map((note) => (
                               <div
                                 key={note.id}
                                 onClick={() => selectNote(note.id)}
-                                className={`flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer text-xs transition-colors ${
+                                className={`flex items-center gap-2 px-2 py-1 rounded-patina-sm cursor-pointer text-xs transition-colors ${
                                   selectedNoteId === note.id
-                                    ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                    ? "bg-patina-tertiary text-patina-primary"
+                                    : "hover:bg-patina-tertiary/50 text-patina-secondary"
                                 }`}
                               >
                                 <span className="flex-1 truncate">
@@ -470,7 +467,7 @@ export function Sidebar() {
                           </div>
                         )}
                         {isExpanded && folderNotes.length === 0 && (
-                          <div className="ml-4 mt-1 text-xs text-gray-400 dark:text-gray-500 px-2 py-1">
+                          <div className="ml-4 mt-0.5 text-xs text-patina-muted px-2 py-1">
                             No notes in this folder
                           </div>
                         )}
@@ -485,10 +482,10 @@ export function Sidebar() {
                     return (
                       <div key={tag.id}>
                         <div
-                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-colors ${
+                          className={`group flex items-center gap-2 px-2 py-1.5 rounded-patina-sm cursor-pointer text-sm transition-colors ${
                             selectedTagId === tag.id
-                              ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                              ? "bg-patina-tertiary text-patina-primary"
+                              : "hover:bg-patina-tertiary/50 text-patina-secondary"
                           }`}
                         >
                           {editingId === tag.id ? (
@@ -497,7 +494,7 @@ export function Sidebar() {
                                 type="text"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                                className="w-full px-2 py-1 text-sm border border-patina-border/[.10] rounded-patina-sm bg-patina-surface text-patina-on-surface outline-none focus:border-patina-primary"
                                 autoFocus
                               />
                               <div className="flex gap-1 flex-wrap">
@@ -505,7 +502,7 @@ export function Sidebar() {
                                   <button
                                     key={color}
                                     onClick={() => setEditColor(color)}
-                                    className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-gray-400" : ""}`}
+                                    className={`w-4 h-4 rounded-full ${editColor === color ? "ring-1 ring-black/30" : ""}`}
                                     style={{ backgroundColor: color }}
                                   />
                                 ))}
@@ -513,13 +510,13 @@ export function Sidebar() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleEdit(tag.id)}
-                                  className="text-xs text-primary-600"
+                                  className="text-xs text-patina-primary font-medium"
                                 >
                                   Save
                                 </button>
                                 <button
                                   onClick={() => setEditingId(null)}
-                                  className="text-xs text-gray-500"
+                                  className="text-xs text-patina-muted"
                                 >
                                   Cancel
                                 </button>
@@ -545,13 +542,13 @@ export function Sidebar() {
                               >
                                 {tag.name}
                               </span>
-                              <span className="text-xs text-gray-400">{tagNotes.length}</span>
+                              <span className="text-xs text-patina-muted">{tagNotes.length}</span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   startEdit(tag.id, tag.name, tag.color);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600"
+                                className="opacity-0 group-hover:opacity-100 p-1 text-patina-muted hover:text-patina-secondary transition-opacity"
                               >
                                 <Edit2 className="w-3 h-3" />
                               </button>
@@ -560,7 +557,7 @@ export function Sidebar() {
                                   e.stopPropagation();
                                   deleteTag(tag.id);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500"
+                                className="opacity-0 group-hover:opacity-100 p-1 text-patina-muted hover:text-patina-error transition-opacity"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
@@ -568,15 +565,15 @@ export function Sidebar() {
                           )}
                         </div>
                         {isExpanded && tagNotes.length > 0 && (
-                          <div className="ml-4 mt-1 space-y-0.5">
+                          <div className="ml-4 mt-0.5 space-y-0.5">
                             {tagNotes.map((note) => (
                               <div
                                 key={note.id}
                                 onClick={() => selectNote(note.id)}
-                                className={`flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer text-xs transition-colors ${
+                                className={`flex items-center gap-2 px-2 py-1 rounded-patina-sm cursor-pointer text-xs transition-colors ${
                                   selectedNoteId === note.id
-                                    ? "bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300"
-                                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                    ? "bg-patina-tertiary text-patina-primary"
+                                    : "hover:bg-patina-tertiary/50 text-patina-secondary"
                                 }`}
                               >
                                 <span className="flex-1 truncate">
@@ -587,7 +584,7 @@ export function Sidebar() {
                           </div>
                         )}
                         {isExpanded && tagNotes.length === 0 && (
-                          <div className="ml-4 mt-1 text-xs text-gray-400 dark:text-gray-500 px-2 py-1">
+                          <div className="ml-4 mt-0.5 text-xs text-patina-muted px-2 py-1">
                             No notes with this tag
                           </div>
                         )}
@@ -600,22 +597,21 @@ export function Sidebar() {
         </>
       )}
 
-      {/* Spacer to keep toggle at bottom */}
       <div className="flex-1" />
 
       {/* Toggle / Pin button (desktop) */}
       <div
-        className={`hidden md:flex items-center border-t border-gray-200 dark:border-gray-700 px-2 py-2 ${
+        className={`hidden md:flex items-center border-t border-patina-border/[.06] px-2 py-2 ${
           isOpen ? "justify-end" : "justify-center"
         }`}
       >
         <button
           type="button"
-          onClick={() => setSidebarPinned(!sidebarPinned)}
-          className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          title={sidebarPinned ? "Collapse sidebar" : "Pin sidebar open"}
+          onClick={() => setIsPinned(!isPinned)}
+          className="p-1.5 rounded-patina-sm hover:bg-patina-tertiary text-patina-muted hover:text-patina-secondary transition-colors"
+          title={isPinned ? "Collapse sidebar" : "Pin sidebar open"}
         >
-          {sidebarPinned ? (
+          {isPinned ? (
             <ChevronLeft className="w-4 h-4" />
           ) : (
             <ChevronRight className="w-4 h-4" />

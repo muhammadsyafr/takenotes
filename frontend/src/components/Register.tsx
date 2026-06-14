@@ -1,123 +1,222 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { StickyNote, Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, StickyNote } from 'lucide-react';
+
+const SLIDES = [
+  'Capture Thoughts,\nCreate Brilliance',
+  'Write Ideas,\nShape Your World',
+  'Organize Notes,\nInspire Action',
+];
+
+const inputBase =
+  'w-full bg-patina-surface border border-patina-border/[.10] rounded-patina-md px-4 py-3.5 text-patina-on-surface placeholder-patina-muted text-sm outline-none focus:border-patina-primary focus:ring-2 focus:ring-patina-primary/10 transition-colors';
 
 export function Register() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register, theme, setTheme, showToast } = useStore();
+  const [slide, setSlide] = useState(0);
+  const { register } = useStore();
+
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      showToast('Passwords do not match', 'error');
+    if (!agreed) {
+      setError('Please agree to the Terms & Conditions');
       return;
     }
     if (password.length < 6) {
-      showToast('Password must be at least 6 characters', 'error');
+      setError('Password must be at least 6 characters');
       return;
     }
+    setError('');
     setIsLoading(true);
     try {
       await register(email, password);
-      showToast('Account created!', 'success');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Registration failed', 'error');
+      setError(err instanceof Error ? err.message : 'Registration failed');
     }
     setIsLoading(false);
   };
 
   return (
-    <div className={`min-h-dvh flex items-center justify-center p-4 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="w-full max-w-sm">
-        <div className={`text-center mb-8 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-4 shadow-lg shadow-primary-600/30">
-            <StickyNote className="w-9 h-9 text-white" />
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-patina-neutral">
+      <div
+        className="w-full max-w-[860px] rounded-patina-lg overflow-hidden flex shadow-xl"
+        style={{ minHeight: '580px' }}
+      >
+        {/* Left panel */}
+        <div
+          className="hidden md:flex md:w-[45%] flex-col relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(155deg, #0A94F5 0%, #0a6fd4 45%, #0A3350 100%)',
+          }}
+        >
+          <div
+            className="absolute top-20 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)' }}
+          />
+          <svg
+            className="absolute bottom-0 left-0 w-full"
+            viewBox="0 0 520 260"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 260 L0 175 L70 105 L140 158 L220 65 L300 128 L385 45 L465 118 L520 88 L520 260 Z"
+              fill="rgba(10,51,80,0.45)"
+            />
+            <path
+              d="M0 260 L0 215 L90 148 L175 198 L255 128 L345 183 L425 108 L505 158 L520 145 L520 260 Z"
+              fill="rgba(10,51,80,0.30)"
+            />
+          </svg>
+
+          <div className="relative z-10 flex items-center p-6">
+            <StickyNote className="w-5 h-5 text-white mr-2 flex-shrink-0" />
+            <span className="text-white font-bold text-base font-manrope">TakeNote</span>
           </div>
-          <h1 className="text-2xl font-bold">TakeNote</h1>
+
+          <div className="relative z-10 mt-auto p-8">
+            <p className="text-white text-2xl font-semibold text-center leading-snug whitespace-pre-line mb-6 font-manrope">
+              {SLIDES[slide]}
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              {SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSlide(i)}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === slide ? 'bg-white w-6 h-1.5' : 'bg-white/40 w-1.5 h-1.5 hover:bg-white/60'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className={`p-6 rounded-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
-          <h2 className={`text-lg font-semibold mb-5 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Create account</h2>
+        {/* Right panel */}
+        <div className="flex-1 flex flex-col justify-center px-8 py-10 sm:px-10 bg-patina-surface">
+          <h1 className="text-[28px] font-bold text-patina-on-surface mb-1.5 font-manrope">
+            Create an account
+          </h1>
+          <p className="text-sm text-patina-muted mb-7">
+            Already have an account?{' '}
+            <button
+              onClick={() => (window.location.hash = 'login')}
+              className="text-patina-primary hover:text-primary-700 font-medium transition-colors"
+            >
+              Log in
+            </button>
+          </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {error && (
+              <div className="bg-patina-error/10 text-patina-error text-sm p-3 rounded-patina-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors ${
-                  theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                }`}
-                placeholder="Email"
-                required
+                type="text"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                placeholder="First name"
+                className={inputBase}
+              />
+              <input
+                type="text"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                placeholder="Last name"
+                className={inputBase}
               />
             </div>
+
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Email"
+              required
+              className={inputBase}
+            />
 
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors ${
-                  theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                }`}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="Password"
                 required
+                className={`${inputBase} pr-12`}
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}
+                onClick={() => setShowPassword(v => !v)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-patina-muted hover:text-patina-on-surface transition-colors"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
-            <div>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors ${
-                  theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                }`}
-                placeholder="Confirm password"
-                required
-              />
-            </div>
+            <label className="flex items-center gap-3 cursor-pointer pt-0.5">
+              <div className="relative shrink-0">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={e => setAgreed(e.target.checked)}
+                  className="sr-only"
+                />
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    agreed
+                      ? 'bg-patina-primary border-patina-primary'
+                      : 'bg-transparent border-patina-border/[.20]'
+                  }`}
+                >
+                  {agreed && (
+                    <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm text-patina-muted">
+                I agree to the{' '}
+                <span className="text-patina-primary">Terms &amp; Conditions</span>
+              </span>
+            </label>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="w-full rounded-full font-semibold text-white text-base bg-patina-primary hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ minHeight: '57px' }}
             >
-              {isLoading ? 'Creating...' : 'Create account'}
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Creating account...
+                </>
+              ) : (
+                'Create account'
+              )}
             </button>
           </form>
-
-          <p className={`mt-5 text-center text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            Have an account?{' '}
-            <button
-              onClick={() => window.location.hash = 'login'}
-              className="text-primary-600 font-medium"
-            >
-              Sign in
-            </button>
-          </p>
-        </div>
-
-        <div className="flex justify-center mt-6">
-          <button
-            type="button"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className={`p-2 rounded-full ${theme === 'dark' ? 'text-gray-400 hover:text-yellow-400 hover:bg-gray-800' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'}`}
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
         </div>
       </div>
     </div>

@@ -44,7 +44,7 @@ export function Layout() {
     sidebarView === "tags";
 
   return (
-    <div className="h-dvh flex bg-white dark:bg-gray-900 min-h-0">
+    <div className="h-dvh flex bg-patina-neutral min-h-0">
       <div
         className={`${
           mobilePane === "sidebar" ? "flex" : "hidden"
@@ -60,7 +60,7 @@ export function Layout() {
               <div
                 className={`${
                   mobilePane === "list" ? "flex" : "hidden"
-                } md:flex w-full md:w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex-col bg-white dark:bg-gray-900 min-h-0`}
+                } md:flex w-full md:w-72 flex-shrink-0 border-r border-patina-border/[.06] flex-col bg-patina-surface min-h-0`}
               >
                 <NoteList />
               </div>
@@ -76,13 +76,13 @@ export function Layout() {
             <div
               className={`${
                 mobilePane === "list" ? "flex" : "hidden"
-              } md:flex flex-1 flex-col overflow-hidden min-h-0 w-full`}
+              } md:flex flex-1 flex-col overflow-hidden min-h-0 w-full bg-patina-surface`}
             >
-              <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex-shrink-0">
+              <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-patina-border/[.06] bg-patina-surface flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setMobilePane("sidebar")}
-                  className="flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 -ml-1"
+                  className="flex items-center gap-1 text-sm font-medium text-patina-primary -ml-1"
                 >
                   <ChevronLeft className="w-5 h-5" />
                   Folders
@@ -94,35 +94,35 @@ export function Layout() {
             <div
               className={`${
                 mobilePane === "list" ? "flex" : "hidden"
-              } md:flex flex-1 flex-col bg-white dark:bg-gray-900 min-h-0 w-full`}
+              } md:flex flex-1 flex-col bg-patina-surface min-h-0 w-full`}
             >
-              <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <div className="md:hidden flex items-center gap-2 px-3 py-2 border-b border-patina-border/[.06] flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setMobilePane("sidebar")}
-                  className="flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 -ml-1"
+                  className="flex items-center gap-1 text-sm font-medium text-patina-primary -ml-1"
                 >
                   <ChevronLeft className="w-5 h-5" />
                   Folders
                 </button>
               </div>
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Trash className="w-5 h-5" />
+              <div className="p-5 border-b border-patina-border/[.06]">
+                <h2 className="text-base font-semibold text-patina-on-surface font-manrope flex items-center gap-2">
+                  <Trash className="w-4 h-4" />
                   Trash
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-patina-muted mt-1">
                   {trashNotes.length} item{trashNotes.length !== 1 ? "s" : ""}
                 </p>
               </div>
               <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
                 {trashNotes.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500">
-                    <Trash className="w-12 h-12 mb-4 opacity-50" />
-                    <p>Trash is empty</p>
+                  <div className="flex flex-col items-center justify-center h-full text-patina-muted">
+                    <Trash className="w-10 h-10 mb-3 opacity-40" />
+                    <p className="text-sm">Trash is empty</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <div className="p-2 space-y-1">
                     {trashNotes.map((note) => {
                       const firstLine =
                         (note.text.split("\n")[0] || "").replace(/^#+\s*/, "") ||
@@ -134,29 +134,29 @@ export function Layout() {
                       return (
                         <div
                           key={note.id}
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-patina-sm hover:bg-patina-tertiary/50 transition-colors"
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            <p className="text-sm font-medium text-patina-on-surface truncate">
                               {title}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                              Deleted on {trashedDate}
+                            <p className="text-xs text-patina-muted mt-0.5">
+                              Deleted {trashedDate}
                             </p>
                           </div>
                           <button
                             onClick={() => restoreNote(note.id)}
-                            className="p-2 text-gray-400 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                            className="p-1.5 text-patina-muted hover:text-green-600 hover:bg-green-50 rounded-patina-sm transition-colors"
                             title="Restore"
                           >
-                            <RotateCcw className="w-4 h-4" />
+                            <RotateCcw className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(note.id)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                            className="p-1.5 text-patina-muted hover:text-patina-error hover:bg-patina-error/10 rounded-patina-sm transition-colors"
                             title="Delete permanently"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       );
@@ -169,23 +169,23 @@ export function Layout() {
         </div>
 
         {deleteConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 backdrop-blur-sm">
+            <div className="bg-patina-elevated rounded-patina-lg shadow-xl p-7 max-w-sm w-full mx-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
-                  <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <div className="p-2 bg-patina-error/10 rounded-patina-sm">
+                  <Trash2 className="w-5 h-5 text-patina-error" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-base font-semibold text-patina-on-surface font-manrope">
                   Delete Permanently?
                 </h3>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-sm text-patina-secondary mb-6 leading-relaxed">
                 This action cannot be undone. The note will be permanently deleted.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg"
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-patina-on-surface bg-patina-neutral hover:bg-patina-tertiary rounded-patina-sm transition-colors"
                 >
                   Cancel
                 </button>
@@ -194,7 +194,7 @@ export function Layout() {
                     permanentDeleteNote(deleteConfirm);
                     setDeleteConfirm(null);
                   }}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg"
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-patina-error hover:bg-[#cc4444] rounded-patina-sm transition-colors"
                 >
                   Delete
                 </button>

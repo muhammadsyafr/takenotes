@@ -20,7 +20,6 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
     fetchNotes,
     notes,
     sidebarView,
-    scratchpadText,
   } = useStore();
 
   const isStarred = selectedNote ? starredNoteIds.includes(selectedNote.id) : false;
@@ -42,8 +41,9 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
   };
 
   const handleExportScratchpad = () => {
-    if (!scratchpadText) return;
-    const blob = new Blob([scratchpadText], { type: 'text/markdown' });
+    const text = localStorage.getItem('scratchpad') || '';
+    if (!text) return;
+    const blob = new Blob([text], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -68,24 +68,25 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
     const d = new Date(dateStr);
     const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const date = d.toLocaleDateString([], { month: '2-digit', day: '2-digit', year: 'numeric' });
-    return `${time} on ${date}`;
+    return `${time} · ${date}`;
   };
 
   const btn = (active = false, danger = false) =>
-    `p-2 md:p-1.5 rounded transition-colors text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0 ${
-      active ? 'text-primary-500 dark:text-primary-400' : ''
-    } ${danger ? 'hover:text-red-500 dark:hover:text-red-400' : 'hover:text-gray-700 dark:hover:text-gray-200'}`;
+    `p-2 md:p-1.5 rounded-patina-sm transition-colors text-patina-muted flex-shrink-0 hover:bg-patina-tertiary ${
+      active ? 'text-patina-primary' : ''
+    } ${danger ? 'hover:text-patina-error' : 'hover:text-patina-secondary'}`;
 
   const disabledIfNoNote = !selectedNote ? 'opacity-30 cursor-not-allowed pointer-events-none' : '';
 
   return (
-    <div className="h-10 md:h-8 flex-shrink-0 flex items-center justify-between gap-2 px-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 min-w-0">
+    <div className="h-10 md:h-8 flex-shrink-0 flex items-center justify-between gap-2 px-3 border-t border-patina-border/[.06] bg-patina-surface min-w-0">
       {/* Left — note/scratchpad actions */}
       <div className="flex items-center gap-0.5 min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {isScratchpad ? (
           <>
             <button
               onClick={() => {
+                const scratchpadText = localStorage.getItem('scratchpad') || '';
                 if (scratchpadText) {
                   setScratchpadView(scratchpadView === 'preview' ? 'editor' : 'preview');
                 }
@@ -154,7 +155,7 @@ export function BottomBar({ onOpenSettings }: BottomBarProps) {
       {/* Right — global controls */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {selectedNote && (
-          <span className="hidden sm:inline text-xs font-mono text-gray-400 dark:text-gray-500 select-none">
+          <span className="hidden sm:inline text-xs text-patina-muted select-none font-mono">
             {formatTimestamp(selectedNote.updatedAt)}
           </span>
         )}

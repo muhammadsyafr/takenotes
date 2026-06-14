@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --patina-primary: 10 148 245;
+    --patina-secondary: 95 118 144;
+    --patina-tertiary: 220 231 241;
+    --patina-neutral: 246 246 247;
+    --patina-surface: 255 255 255;
+    --patina-on-surface: 10 51 80;
+    --patina-error: 226 85 85;
+    --patina-muted: 154 166 178;
+    --patina-border: 0 0 0;
+    --patina-elevated: 255 255 255;
+}
+
+.dark {
+    --patina-primary: 46 168 255;
+    --patina-secondary: 123 148 171;
+    --patina-tertiary: 26 51 80;
+    --patina-neutral: 12 26 39;
+    --patina-surface: 20 34 49;
+    --patina-on-surface: 220 231 241;
+    --patina-error: 240 112 112;
+    --patina-muted: 130 158 178;
+    --patina-border: 255 255 255;
+    --patina-elevated: 28 46 64;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -16,13 +42,12 @@ body,
 }
 
 body {
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+    font-family: "General Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
+    color: rgb(var(--patina-on-surface));
+    background-color: rgb(var(--patina-neutral));
 }
 
 .cm-editor {
@@ -40,161 +65,136 @@ body {
 }
 
 .markdown-preview {
-    padding: 16px;
+    padding: 24px;
     line-height: 1.7;
+    color: rgb(var(--patina-on-surface));
 }
 
 .markdown-preview h1 {
+    font-family: 'Manrope', sans-serif;
     font-size: 2em;
-    font-weight: 700;
+    font-weight: 600;
     margin: 1em 0 0.5em;
+    color: rgb(var(--patina-on-surface));
 }
+
 .markdown-preview h2 {
+    font-family: 'Manrope', sans-serif;
     font-size: 1.5em;
     font-weight: 600;
     margin: 1em 0 0.5em;
+    color: rgb(var(--patina-on-surface));
 }
+
 .markdown-preview h3 {
+    font-family: 'Manrope', sans-serif;
     font-size: 1.25em;
     font-weight: 600;
     margin: 1em 0 0.5em;
+    color: rgb(var(--patina-on-surface));
 }
+
 .markdown-preview p {
     margin: 0.75em 0;
 }
+
 .markdown-preview code {
-    background: #f3f4f6;
-    padding: 2px 4px;
-    border-radius: 4px;
+    background: rgb(var(--patina-tertiary));
+    color: rgb(var(--patina-on-surface));
+    padding: 2px 6px;
+    border-radius: 6px;
     font-size: 0.9em;
 }
+
 .markdown-preview pre {
-    background: #1f2937;
-    color: #e5e7eb;
-    padding: 16px;
-    border-radius: 8px;
+    background: rgb(var(--patina-on-surface));
+    color: rgb(var(--patina-tertiary));
+    padding: 20px;
+    border-radius: 12px;
     overflow-x: auto;
 }
+
 .markdown-preview pre code {
     background: transparent;
     padding: 0;
+    color: inherit;
 }
+
 .markdown-preview ul,
 .markdown-preview ol {
     padding-left: 1.5em;
     margin: 0.5em 0;
 }
+
 .markdown-preview li {
     margin: 0.25em 0;
 }
+
 .markdown-preview blockquote {
-    border-left: 4px solid #3b82f6;
+    border-left: 4px solid rgb(var(--patina-primary));
     padding-left: 1em;
     margin: 1em 0;
-    color: #6b7280;
+    color: rgb(var(--patina-secondary));
 }
+
 .markdown-preview a {
-    color: #3b82f6;
+    color: rgb(var(--patina-primary));
     text-decoration: underline;
 }
+
 .markdown-preview hr {
     border: none;
-    border-top: 1px solid #e5e7eb;
-    margin: 1em 0;
+    border-top: 1px solid rgb(var(--patina-border) / 0.08);
+    margin: 1.5em 0;
 }
+
 .markdown-preview table {
     border-collapse: collapse;
     width: 100%;
     margin: 1em 0;
 }
+
 .markdown-preview th,
 .markdown-preview td {
-    border: 1px solid #e5e7eb;
-    padding: 8px 12px;
+    border: 1px solid rgb(var(--patina-border) / 0.08);
+    padding: 10px 14px;
     text-align: left;
 }
+
 .markdown-preview th {
-    background: #f9fafb;
+    background: rgb(var(--patina-neutral));
     font-weight: 600;
+    color: rgb(var(--patina-on-surface));
 }
 
-.dark .markdown-preview {
-    color: #e5e7eb;
-}
-.dark .markdown-preview h1,
-.dark .markdown-preview h2,
-.dark .markdown-preview h3 {
-    color: #f9fafb;
-}
-.dark .markdown-preview code {
-    background: #374151;
-    color: #e5e7eb;
-}
-.dark .markdown-preview blockquote {
-    color: #9ca3af;
-    border-left-color: #60a5fa;
-}
-.dark .markdown-preview hr {
-    border-top-color: #374151;
-}
-.dark .markdown-preview th {
-    background: #1f2937;
-    color: #f9fafb;
-}
-.dark .markdown-preview th,
-.dark .markdown-preview td {
-    border-color: #374151;
-}
-.dark .markdown-preview td {
-    color: #e5e7eb;
-}
-
-/* Custom Scrollbar - Light Mode */
+/* Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
+    background: rgb(var(--patina-neutral));
+    border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
+    background: rgb(var(--patina-muted));
+    border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
+    background: rgb(var(--patina-secondary));
 }
 
-/* Custom Scrollbar - Dark Mode */
-.dark ::-webkit-scrollbar-track {
-    background: #1f2937;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-    background: #4b5563;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
-}
-
-/* Firefox */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #c1c1c1 #f1f1f1;
-}
-
-.dark * {
-    scrollbar-color: #4b5563 #1f2937;
+    scrollbar-color: rgb(var(--patina-muted)) rgb(var(--patina-neutral));
 }
 
 @media (max-width: 767px) {
     .markdown-preview {
-        padding: 12px;
+        padding: 16px;
     }
 
     .cm-editor .cm-scroller {
