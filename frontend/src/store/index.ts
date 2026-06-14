@@ -66,6 +66,11 @@ interface AppState {
   starredNoteIds: string[];
   toggleStar: (id: string) => void;
 
+  // Toast
+  toast: { message: string; type: 'success' | 'error' } | null;
+  showToast: (message: string, type?: 'success' | 'error') => void;
+  hideToast: () => void;
+
   // UI
   theme: Theme;
   viewMode: ViewMode;
@@ -428,6 +433,11 @@ export const useStore = create<AppState>((set, get) => ({
     localStorage.setItem("starredNotes", JSON.stringify(newStarred));
     set({ starredNoteIds: newStarred });
   },
+
+  // Toast
+  toast: null,
+  showToast: (message, type = 'success') => set({ toast: { message, type } }),
+  hideToast: () => set({ toast: null }),
 
   // UI
   theme: (localStorage.getItem("theme") as Theme) || "light",

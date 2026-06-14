@@ -26,6 +26,8 @@ git pull origin main
 
 ```bash
 docker-compose up -d --build
+#or
+podman compose up -d --build
 ```
 
 This will:
